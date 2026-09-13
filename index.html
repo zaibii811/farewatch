@@ -107,6 +107,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 
 .filters{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}
 .filters button{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:9px 15px;font-weight:700;font-size:.92rem;min-height:42px}
+.filters.wrap{flex-wrap:wrap;overflow:visible}
 .filters button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 :root[data-theme="dark"] .filters button[aria-pressed="true"]{background:var(--amber);color:#3A2A00;border-color:var(--amber)}
 .live{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:.85rem;font-weight:700;margin-bottom:8px}
@@ -152,8 +153,8 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
   <main>
     <section class="screen" id="s-deals">
       <h1>Cheap flights, spotted today</h1>
-      <p class="lede">Error fares and flash sales pulled from the deal forums. Tap one to open it.</p>
-      <div class="live"><i></i><span id="liveTxt">Watching the forums</span></div>
+      <p class="lede">Error fares and flash sales, found for you around the clock. Tap one to book.</p>
+      <div class="live"><i></i><span id="liveTxt">Scanning fares right now</span></div>
       <div class="filters" id="filters">
         <button aria-pressed="true" data-f="all">All</button>
         <button aria-pressed="false" data-f="mine">From my city</button>
@@ -185,9 +186,11 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 
       <div class="step" data-step="1">
         <p class="q">Where do you want to go?</p>
-        <p class="hint">Pick a place, or leave it empty for anywhere cheap.</p>
-        <input class="big" id="toIn" placeholder="City, airport, or leave empty" autocomplete="off" inputmode="search">
+        <p class="hint">A city, a country, or a whole area — whatever suits.</p>
+        <input class="big" id="toIn" placeholder="City, country, or airport" autocomplete="off" inputmode="search">
         <div class="results" id="toRes"></div>
+        <p class="hint" style="margin:14px 0 8px">Or pick a whole area</p>
+        <div class="filters wrap" id="regionChips"></div>
       </div>
 
       <div class="step" data-step="2">
@@ -294,6 +297,8 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const COUNTRY=(()=>{try{const d=new Intl.DisplayNames(["en"],{type:"region"});return c=>d.of(c)}catch{return c=>c}})();
 const CITY={};AIRPORTS.forEach(a=>CITY[a[0]]=a[1]);
 const CABIN={any:"Any seat",economy:"Economy",premium:"Premium economy",business:"Business",first:"First"};
+const REGIONS=[["","Anywhere"],["EU","Europe"],["ME","Middle East"],["SA","South Asia"],["SEA","Southeast Asia"],["EA","East Asia"],["CAR","Caribbean & Mexico"],["US","United States"],["CA","Canada"],["LATAM","South & Central America"],["AF","Africa"],["OC","Australia & Pacific"]];
+const COUNTRIES=[...new Set(AIRPORTS.map(a=>a[3]))].map(c=>[c,COUNTRY(c)]).filter(x=>x[1]&&x[1]!==x[0]);
 const CH={whatsapp:"WhatsApp",telegram:"Telegram",push:"This device",email:"Email",sms:"Text"};
 const RATE={CAD:1,USD:1.36,EUR:1.48,GBP:1.72,PKR:0.0049};
 const fmt=(n,c)=>{try{return new Intl.NumberFormat("en-CA",{style:"currency",currency:c,maximumFractionDigits:0}).format(n)}catch{return c+" "+Math.round(n)}};
@@ -331,9 +336,11 @@ $("#themeBtn").onclick=()=>{const dark=root.dataset.theme==="dark"||(!root.datas
 function showTab(t){$$(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+t));$$("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));window.scrollTo({top:0});if(t==="deals")renderDeals();if(t==="mine")renderAlerts()}
 $$("nav.tabs button").forEach(b=>b.onclick=()=>{buzz("light");showTab(b.dataset.tab)});
 
+const toLabel=()=>S.to?(Array.isArray(S.to)?S.to[1]:S.to.label):"Anywhere";
+const toCode=()=>S.to?(Array.isArray(S.to)?S.to[0]:S.to.code):null;
 function updateRoute(){
   const f=S.from,t=S.to;
-  $("#lblFrom").textContent=f?f[1]:"From";$("#lblTo").textContent=t?t[1]:(f&&S.step>1?"Anywhere":"To");
+  $("#lblFrom").textContent=f?f[1]:"From";$("#lblTo").textContent=t?toLabel():(f&&S.step>1?"Anywhere":"To");
   const arc=$("#arcLive"),plane=$("#plane");
   if(f&&(t||S.step>1)){arc.style.strokeDashoffset="0";plane.classList.add("flying")}
   else if(f){arc.style.strokeDashoffset=".55";plane.classList.remove("flying");plane.style.offsetDistance="40%"}
@@ -360,12 +367,23 @@ function search(q){
 function wireAirport(inId,resId,key){
   const input=$(inId),res=$(resId);
   input.addEventListener("input",()=>{
-    S[key]=null;const hits=search(input.value);
-    res.innerHTML=hits.map(a=>`<button type="button" data-code="${a[0]}"><span><b>${a[1]}</b><small>${a[2]!==a[1]&&!a[2].startsWith(a[1])?a[2]+" · ":""}${COUNTRY(a[3])}</small></span><code>${a[0]}</code></button>`).join("")||(input.value.length>1?`<div class="hint">No airport found. Try the city name or its 3-letter code.</div>`:"");
+    S[key]=null;const q=input.value.trim().toLowerCase();const hits=search(input.value);
+    const countries=key==="to"&&q.length>2?COUNTRIES.filter(c=>c[1].toLowerCase().startsWith(q)).slice(0,3):[];
+    res.innerHTML=countries.map(c=>`<button type="button" data-country="${c[0]}"><span><b>${c[1]}</b><small>Anywhere in the country</small></span><code>🌍</code></button>`).join("")
+      +hits.map(a=>`<button type="button" data-code="${a[0]}"><span><b>${a[1]}</b><small>${a[2]!==a[1]&&!a[2].startsWith(a[1])?a[2]+" · ":""}${COUNTRY(a[3])}</small></span><code>${a[0]}</code></button>`).join("")
+      ||(q.length>1?`<div class="hint">Nothing found. Try the city, country, or 3-letter airport code.</div>`:"");
+    if(key==="to")$$("#regionChips button").forEach(b=>b.setAttribute("aria-pressed",false));
     updateRoute();$("#nextBtn").disabled=key==="from";
   });
-  res.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const a=AIRPORTS.find(x=>x[0]===b.dataset.code);S[key]=a;input.value=`${a[1]} (${a[0]})`;res.innerHTML="";buzz("medium");updateRoute();$("#nextBtn").disabled=false;setTimeout(next,220)});
+  res.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+    if(b.dataset.country){const c=COUNTRIES.find(x=>x[0]===b.dataset.country);S.to={kind:"country",code:"C:"+c[0],label:c[1]};input.value=c[1]}
+    else{const a=AIRPORTS.find(x=>x[0]===b.dataset.code);S[key]=a;input.value=`${a[1]} (${a[0]})`}
+    res.innerHTML="";buzz("medium");updateRoute();$("#nextBtn").disabled=false;setTimeout(next,220)});
 }
+$("#regionChips").innerHTML=REGIONS.map(([id,l])=>`<button type="button" data-r="${id}" aria-pressed="${id===""}">${l}</button>`).join("");
+$("#regionChips").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;buzz("medium");
+  $$("#regionChips button").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#toIn").value="";$("#toRes").innerHTML="";
+  S.to=b.dataset.r?{kind:"region",code:"R:"+b.dataset.r,label:b.textContent}:null;updateRoute();setTimeout(next,220)});
 wireAirport("#fromIn","#fromRes","from");wireAirport("#toIn","#toRes","to");
 
 function group(sel,key,multi){
@@ -418,7 +436,7 @@ const contact=()=>({whatsapp:$("#wa").value.trim(),telegram:$("#tgu").value.trim
 const whenText=a=>({any:"any time","3m":"next 3 months",winter:"this winter",summer:"next summer",pick:`${a.d1||"?"} → ${a.d2||"open"}`})[a.when]||a.when;
 function renderSummary(){
   const sel=$("#airline").selectedOptions[0];const c=$("#cur").value;
-  $("#summary").innerHTML=[["From",S.from[1]+" ("+S.from[0]+")"],["To",S.to?S.to[1]+" ("+S.to[0]+")":"Anywhere"],["When",whenText({when:S.when,d1:$("#d1").value,d2:$("#d2").value})],
+  $("#summary").innerHTML=[["From",S.from[1]+" ("+S.from[0]+")"],["To",toLabel()+(Array.isArray(S.to)?" ("+S.to[0]+")":"")],["When",whenText({when:S.when,d1:$("#d1").value,d2:$("#d2").value})],
     ["Seat",CABIN[S.cabin]+(S.stops==="0"?", nonstop":"")],["Airline",sel.value||"Any"],["Alert me under",fmt(+price.value,c)],
     ["Send to",tg?"Telegram":[...S.channels].map(x=>CH[x]).join(", ")]].map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join("");
 }
@@ -434,14 +452,14 @@ function representativeDates(){
 }
 function payload(){
   const {d1,d2}=representativeDates();const sel=$("#airline").selectedOptions[0];const c=$("#cur").value;
-  return{trip_type:d2?"round_trip":"one_way",origin:S.from[0],destination:S.to?S.to[0]:null,dep_date:d1,return_date:d2,
+  return{trip_type:d2?"round_trip":"one_way",origin:S.from[0],destination:toCode(),dep_date:d1,return_date:d2,
     cabin_class:{any:"economy",economy:"economy",premium:"premium_economy",business:"business",first:"first"}[S.cabin],
     airline:(sel&&sel.dataset.code)||"ALL",max_stops:S.stops,max_price:+price.value,currency:c,
     channels:[...S.channels],contact:{...contact(),push:pushSubscription}};
 }
 async function save(){
   const p=payload();
-  if(tg){if(!S.to){toast("Inside Telegram I need a destination.");go(1);return}p.max_price=Math.round(toCAD(p.max_price,p.currency));p.currency="CAD";buzz("success");tg.sendData(JSON.stringify(p));tg.close();return}
+  if(tg){p.max_price=Math.round(toCAD(p.max_price,p.currency));p.currency="CAD";buzz("success");tg.sendData(JSON.stringify(p));tg.close();return}
   $("#nextBtn").disabled=true;
   try{
     if(API&&serverChannels){const r=await api("/alerts",{method:"POST",body:JSON.stringify(p)});alerts.unshift(fromServer(r.alert))}
@@ -452,39 +470,44 @@ async function save(){
   confetti();buzz("success");go(7);
 }
 function reset(){S.from=S.to=null;S.when="any";S.cabin="any";S.stops="ANY";S.channels.clear();$("#fromIn").value=$("#toIn").value="";$("#fromRes").innerHTML=$("#toRes").innerHTML="";
-  $$("#whenOpts .opt,#cabinOpts .opt,#stopOpts .opt").forEach(o=>o.setAttribute("aria-pressed",["any","ANY"].includes(o.dataset.v)));$$("#chOpts .opt").forEach(o=>o.setAttribute("aria-pressed",false));$$(".sub-in").forEach(s=>s.classList.remove("open"));$("#dates").classList.remove("open")}
+  $$("#regionChips button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.r===""));$$("#whenOpts .opt,#cabinOpts .opt,#stopOpts .opt").forEach(o=>o.setAttribute("aria-pressed",["any","ANY"].includes(o.dataset.v)));$$("#chOpts .opt").forEach(o=>o.setAttribute("aria-pressed",false));$$(".sub-in").forEach(s=>s.classList.remove("open"));$("#dates").classList.remove("open")}
 function confetti(){const c=$("#confetti");c.innerHTML="";const cols=["#FF6B35","#FFC94A","#1F8A70","#14213D","#2AABEE"];for(let i=0;i<60;i++){const s=document.createElement("i");s.style.left=Math.random()*100+"vw";s.style.background=cols[i%5];s.style.animationDelay=Math.random()*.5+"s";s.style.animationDuration=1.3+Math.random()+"s";c.appendChild(s)}setTimeout(()=>c.innerHTML="",2600)}
 
 let DEALS=[
-{from:"YYZ",to:"LIS",cabin:"economy",price:398,was:890,cur:"CAD",type:"error",src:"FlyerTalk",title:"Toronto to Lisbon — surcharge mistake, book direct",age:12,url:"#"},
-{from:"YYZ",to:"NRT",cabin:"business",price:2140,was:5600,cur:"CAD",type:"flash",src:"BusinessClassDeals",title:"Toronto to Tokyo in business, flash sale ends Tuesday",age:41,url:"#"},
-{from:"YUL",to:"CDG",cabin:"economy",price:441,was:820,cur:"CAD",type:"flash",src:"Secret Flying",title:"Montreal to Paris nonstop, bag included",age:65,url:"#"},
-{from:"LHE",to:"KUL",cabin:"economy",price:52000,was:98000,cur:"PKR",type:"flash",src:"r/flightdeals",title:"Lahore to Kuala Lumpur, Malaysia Airlines promo",age:90,url:"#"},
-{from:"JFK",to:"DUB",cabin:"economy",price:289,was:640,cur:"USD",type:"flash",src:"Secret Flying",title:"New York to Dublin nonstop",age:140,url:"#"},
-{from:"YYZ",to:"DEL",cabin:"business",price:2880,was:7100,cur:"CAD",type:"mistake",src:"FlyerTalk",title:"Toronto to Delhi business — likely mistake fare",age:18,url:"#"},
+{from:"YYZ",to:"LIS",cabin:"economy",price:398,was:890,cur:"CAD",type:"error",title:"Toronto to Lisbon — pricing mistake, book direct with the airline",age:12},
+{from:"YYZ",to:"NRT",cabin:"business",price:2140,was:5600,cur:"CAD",type:"flash",title:"Toronto to Tokyo in business, flash sale ends Tuesday",age:41},
+{from:"YUL",to:"CDG",cabin:"economy",price:441,was:820,cur:"CAD",type:"flash",title:"Montreal to Paris nonstop, bag included",age:65},
+{from:"LHE",to:"KUL",cabin:"economy",price:52000,was:98000,cur:"PKR",type:"flash",title:"Lahore to Kuala Lumpur, Malaysia Airlines promo",age:90},
+{from:"JFK",to:"DUB",cabin:"economy",price:289,was:640,cur:"USD",type:"flash",title:"New York to Dublin nonstop",age:140},
+{from:"YYZ",to:"DEL",cabin:"business",price:2880,was:7100,cur:"CAD",type:"mistake",title:"Toronto to Delhi business — likely mistake fare",age:18},
 ];
 let filter="all";
 $("#filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;$$("#filters button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderDeals()});
 const TYPE={error:"Error fare",mistake:"Mistake fare",flash:"Flash sale",deal:"Deal"};
-function matches(p){return DEALS.filter(d=>d.from===p.origin&&(!p.destination||d.to===p.destination)&&(p.cabin_class==="economy"||d.cabin===p.cabin_class||(p.cabin_class==="premium_economy"&&d.cabin==="premium"))&&d.price&&toCAD(d.price,d.cur)<=toCAD(p.max_price,p.currency))}
+const gflights=(o,d)=>"https://www.google.com/travel/flights?q="+encodeURIComponent(`Flights from ${o}${d?" to "+d:""}`);
+const META={};AIRPORTS.forEach(a=>META[a[0]]=[a[3],a[5]]);
+const RCOUNTRIES={ME:"AE,SA,QA,BH,KW,OM,JO,LB,IL,IQ,IR,TR,EG",SA:"PK,IN,BD,LK,NP,MV,BT,AF",SEA:"MY,SG,TH,VN,ID,PH,KH,LA,MM,BN",EA:"JP,KR,CN,HK,TW,MO,MN",CAR:"MX,CU,DO,JM,BS,BB,AW,CW,PR,TT,KY,TC,AG,LC,VC,GD,SX,MF,VI,VG,BM,BZ,CR,PA",US:"US",CA:"CA",LATAM:"GT,HN,SV,NI"},RCONT={EU:"EU",LATAM:"SA",AF:"AF",OC:"OC"};
+function destOk(spec,code){if(!spec)return true;if(!code)return false;const m=META[code]||[];if(spec.startsWith("C:"))return m[0]===spec.slice(2);if(spec.startsWith("R:")){const r=spec.slice(2);return (RCOUNTRIES[r]||"").split(",").includes(m[0])||RCONT[r]===m[1]}return code===spec}
+function matches(p){return DEALS.filter(d=>d.from===p.origin&&destOk(p.destination,d.to)&&(p.cabin_class==="economy"||d.cabin===p.cabin_class||(p.cabin_class==="premium_economy"&&d.cabin==="premium"))&&d.price&&toCAD(d.price,d.cur)<=toCAD(p.max_price,p.currency))}
 function renderDeals(){
   const my=alerts[0]?alerts[0].from:(S.from?S.from[0]:null);
   const list=DEALS.filter(d=>filter==="all"||(filter==="error"&&(d.type==="error"||d.type==="mistake"))||(filter==="business"&&(d.cabin==="business"||d.cabin==="first"))||(filter==="mine"&&my&&d.from===my));
-  $("#deals").innerHTML=list.length?list.map(d=>`<a class="deal" href="${d.url}" ${d.url!=="#"?'target="_blank" rel="noopener"':""}>
+  $("#deals").innerHTML=list.length?list.map(d=>`<a class="deal" href="${d.book_url||(d.from?gflights(d.from,d.to):"#")}" target="_blank" rel="noopener">
     <div class="row1"><div class="price">${d.price?fmt(d.price,d.cur):"See post"}${d.was?`<small>usually ${fmt(d.was,d.cur)}</small>`:""}</div><span class="tag ${d.type}">${TYPE[d.type]||"Deal"}</span></div>
     <div class="cities">${d.from?(CITY[d.from]||d.from):"?"} → ${d.to?(CITY[d.to]||d.to):"several cities"}</div>
     <div class="meta">${d.title}${d.cabin&&d.cabin!=="economy"?" · "+(CABIN[d.cabin]||d.cabin):""}</div>
-    <div class="foot"><span>${d.src} · ${ago(d.age)}</span><b>Open ›</b></div></a>`).join("")
+    <div class="foot"><span>Spotted ${ago(d.age)}</span><b>Book on Google Flights ›</b></div></a>`).join("")
   :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
 }
 
+const destLabel=t=>!t?"Anywhere":t.startsWith("R:")?(REGIONS.find(r=>r[0]===t.slice(2))||[,t])[1]:t.startsWith("C:")?COUNTRY(t.slice(2)):(CITY[t]||t);
 function fromServer(r){const cab={economy:"economy",premium_economy:"premium",business:"business",first:"first"}[r.cabin_class]||"any";
   return{id:String(r.id),from:r.origin,to:r.destination||"",when:"pick",d1:r.departure_date,d2:r.return_date||"",cabin:cab,airline:r.preferred_airline&&r.preferred_airline!=="ALL"?(CODE_NAME[r.preferred_airline]||r.preferred_airline):"",price:r.target_price,cur:"CAD",channels:r.channels||[],paused:!!r.paused,lastLow:r.last_low}}
 function persistLocal(){if(!API||!serverChannels)try{localStorage.setItem("fw-alerts",JSON.stringify(alerts))}catch{}}
 function renderAlerts(){
   $("#mineSub").textContent=alerts.length?`${alerts.length} route${alerts.length>1?"s":""} being watched.`:"Nothing yet.";
   $("#alerts").innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.paused?"paused":""}" data-id="${a.id}">
-    <div class="cities">${CITY[a.from]||a.from} → ${a.to?(CITY[a.to]||a.to):"Anywhere"}</div>
+    <div class="cities">${CITY[a.from]||a.from} → ${destLabel(a.to)}</div>
     <div class="meta">Under <em>${fmt(a.price,a.cur)}</em> · ${CABIN[a.cabin]} · ${a.airline||"any airline"} · ${whenText(a)}${a.lastLow?` · lowest seen <em>${fmt(a.lastLow,"CAD")}</em>`:""}${a.paused?" · <em>paused</em>":""}</div>
     <div class="via">${a.channels.map(c=>`<span>${CH[c]||c}</span>`).join("")}</div>
     <div class="acts"><button data-act="pause">${a.paused?"Resume":"Pause"}</button><button data-act="del">Delete</button></div></div>`).join("")
@@ -506,7 +529,7 @@ async function boot(){
       const cfg=await api("/config");serverChannels=cfg.channels||[];vapidKey=cfg.vapid_public_key||null;
       $$("#chOpts .opt[data-v]").forEach(b=>{if(!serverChannels.includes(b.dataset.v)){b.disabled=true;b.style.opacity=".45";b.querySelector("span:last-child").innerHTML+='<small>Coming soon</small>'}});
       const d=(await api("/deals?limit=40")).deals||[];
-      if(d.length){DEALS=d.map(x=>({from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",src:x.source,title:x.title,url:x.url,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals from the forums`}
+      if(d.length){DEALS=d.map(x=>({from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals found`}
       if(!tg)alerts=((await api("/alerts")).alerts||[]).map(fromServer);
     }catch(e){console.warn("API unavailable, sample mode:",e.message)}
   }

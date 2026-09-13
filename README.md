@@ -5,8 +5,8 @@ Cheap flights find you. A single-page app where anyone — from first-time booke
 **Live demo:** open `index.html` in any browser (no build step).
 
 ## What it does
-- Departures-board style feed of error fares, flash sales and mistake fares, tagged with the forum they were spotted on (FlyerTalk, Secret Flying, BusinessClassDeals, r/flightdeals…)
-- Boarding-pass alert builder: from / to (or "Anywhere"), dates, seat class, airline, and a "message me below $X" price
+- Feed of error fares, flash sales and mistake fares, each linking straight to a Google Flights search to book
+- One-question-at-a-time alert builder: from, to (a city, country, or region like "Europe"), dates, seat class, airline, and a "message me below $X" price
 - Delivery choices: WhatsApp, Telegram, device pop-ups, email, SMS
 - Live "deals that match right now" as you type
 - Saved alerts with pause/delete, message previews, bigger-text mode, light/dark
