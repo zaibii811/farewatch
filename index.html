@@ -39,12 +39,12 @@ h1{font-size:1.7rem;line-height:1.1;letter-spacing:-.025em;margin:14px 0 6px;fon
 .lede{color:var(--muted);margin:0 0 18px;font-size:1rem}
 
 nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs .bar{pointer-events:auto;width:min(520px,100%);background:var(--card);border-top:1.5px solid var(--line);display:grid;grid-template-columns:1fr 1.3fr 1fr;padding:8px 10px 10px}
+nav.tabs .bar{pointer-events:auto;width:min(520px,100%);background:var(--card);border-top:1.5px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px 12px 10px}
 nav.tabs button{background:none;border:0;border-radius:14px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--muted);min-height:58px}
 nav.tabs button .em{font-size:1.5rem;line-height:1}
 nav.tabs button[aria-selected="true"]{color:var(--blue);background:var(--sky)}
-nav.tabs button.main{background:var(--signal);color:#fff;transform:translateY(-14px);border-radius:18px;box-shadow:0 8px 20px -6px rgba(255,107,53,.7)}
-nav.tabs button.main[aria-selected="true"]{background:var(--signal-ink)}
+nav.tabs button.main{background:var(--hero);color:#fff;box-shadow:0 6px 16px -6px rgba(47,107,255,.6)}
+nav.tabs button.main[aria-selected="true"]{color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55)}
 
 .route{position:relative;height:170px;margin:4px 0 12px;background:var(--hero);border-radius:24px;padding:10px 10px 0;box-shadow:0 18px 40px -18px rgba(47,107,255,.6);overflow:hidden}
 .route::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.25),transparent 40%),radial-gradient(circle at 85% 80%,rgba(255,255,255,.15),transparent 35%)}
@@ -139,7 +139,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 
 .toast{position:fixed;left:50%;bottom:104px;transform:translate(-50%,140px);background:#14204A;color:#fff;padding:13px 20px;border-radius:14px;font-weight:700;max-width:88vw;z-index:50;transition:transform .25s;text-align:center}
 .toast.show{transform:translate(-50%,0)}
-.in-telegram nav.tabs .bar{grid-template-columns:1fr 1.3fr}
+.in-telegram nav.tabs .bar{grid-template-columns:1fr 1fr}
 </style>
 </head>
 <body>
@@ -283,7 +283,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 
   <nav class="tabs" aria-label="Sections"><div class="bar">
     <button data-tab="deals" aria-selected="false"><span class="em">🔥</span>Deals</button>
-    <button data-tab="new" class="main" aria-selected="true"><span class="em">✈️</span>New alert</button>
+    <button data-tab="new" class="main" aria-selected="true"><span class="em">✈️</span>Track a fare</button>
     <button data-tab="mine" aria-selected="false"><span class="em">🔔</span>My alerts</button>
   </div></nav>
 </div>
