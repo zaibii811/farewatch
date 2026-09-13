@@ -31,6 +31,7 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .brand{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
 .brand i{width:28px;height:28px;border-radius:9px;background:var(--hero);display:grid;place-items:center;color:#fff;font-style:normal;font-size:.9rem}
 .top .tools{display:flex;gap:6px}
+.top .tools select{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:6px 8px;font-weight:700;font-size:.85rem;min-height:40px}
 .top .tools button{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:6px 10px;font-weight:700;font-size:.85rem;min-height:40px}
 .top .tools button[aria-pressed="true"]{background:var(--sky);border-color:var(--ink)}
 main{flex:1;padding:8px 18px 110px}
@@ -114,16 +115,28 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 @keyframes ping{70%{box-shadow:0 0 0 9px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
 .deals{display:grid;gap:12px}
 .deal{display:block;text-decoration:none;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;animation:rise .5s both}
+.deal .cities .arrow{margin:0 12px;color:var(--muted)}
+.deal .cities img{width:24px;height:18px;border-radius:3px;vertical-align:-2px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.deal .chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}
+.deal .chips span{background:var(--sky);border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:700}
+.deal .desc{color:var(--muted);font-size:.92rem;margin-top:4px}
+.deal .foot{align-items:center}
+.deal .foot .book{background:var(--blue);color:#fff;text-decoration:none;border-radius:12px;padding:10px 14px;font-weight:800}
+.deal .milesBtn{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:9px 12px;font-weight:700;font-size:.85rem;color:var(--text)}
+.deal .milesBtn[aria-expanded="true"]{background:var(--sky);border-color:var(--blue)}
+.deal .miles{display:none}.deal .miles.open{display:block}
 .deal:nth-child(2){animation-delay:.06s}.deal:nth-child(3){animation-delay:.12s}.deal:nth-child(4){animation-delay:.18s}.deal:nth-child(5){animation-delay:.24s}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.deal .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.deal .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.deal .price{flex:1 1 auto;min-width:0;white-space:nowrap;font-size:1.75rem}
+.approx{font-size:.7em;opacity:.6;margin-right:4px;vertical-align:middle}
 .deal .price{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--blue)}
 .deal{border-left:6px solid var(--blue);min-width:0}.deal.error,.deal.mistake{border-left-color:var(--signal)}.deal.flash{border-left-color:var(--amber)}
 .deal .price small{display:block;font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:0;margin-top:3px}
 .tag{font-weight:800;font-size:.72rem;padding:5px 9px;border-radius:8px;white-space:nowrap}
 .tag.error,.tag.mistake{background:var(--signal);color:#fff}.tag.flash{background:var(--amber);color:#3A2A00}.tag.deal{background:var(--violet);color:#fff}
-.deal .cities{font-weight:800;font-size:1.15rem;margin:10px 0 4px;letter-spacing:-.01em}
-.deal .tags{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.deal .cities{font-weight:800;font-size:1.2rem;margin:12px 0 2px;letter-spacing:-.01em;display:flex;align-items:center;flex-wrap:wrap}
+.deal .tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;max-width:52%;flex:0 1 auto}
 .tag.fire{background:var(--go-soft);color:#0B5C42}
 .deal .airline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:700;font-size:.92rem;margin-bottom:4px}
 .deal .airline .al{background:var(--ink);color:#fff;border-radius:6px;padding:2px 6px;font-size:.75rem;letter-spacing:.04em}
@@ -153,7 +166,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 <div class="app">
   <header class="top">
     <div class="brand"><i>✈</i>FareWatch</div>
-    <div class="tools"><button id="fsBtn" aria-pressed="false">Aa</button><button id="themeBtn" aria-label="Light or dark">◐</button></div>
+    <div class="tools"><select id="prefCur" aria-label="Currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option><option>PKR</option><option>INR</option><option>AED</option><option>MYR</option></select><button id="fsBtn" aria-pressed="false">Aa</button><button id="themeBtn" aria-label="Light or dark">◐</button></div>
   </header>
 
   <main>
@@ -309,7 +322,11 @@ const CABIN={any:"Any seat",economy:"Economy",premium:"Premium economy",business
 const REGIONS=[["","Anywhere"],["EU","Europe"],["ME","Middle East"],["SA","South Asia"],["SEA","Southeast Asia"],["EA","East Asia"],["CAR","Caribbean & Mexico"],["US","United States"],["CA","Canada"],["LATAM","South & Central America"],["AF","Africa"],["OC","Australia & Pacific"]];
 const COUNTRIES=[...new Set(AIRPORTS.map(a=>a[3]))].map(c=>[c,COUNTRY(c)]).filter(x=>x[1]&&x[1]!==x[0]);
 const CH={whatsapp:"WhatsApp",telegram:"Telegram",push:"This device",email:"Email",sms:"Text"};
-const RATE={CAD:1,USD:1.36,EUR:1.48,GBP:1.72,PKR:0.0049};
+const RATE={CAD:1,USD:1.36,EUR:1.48,GBP:1.72,PKR:0.0049,INR:0.0162,AED:0.37,MYR:0.31}; // CAD per unit; refreshed live when possible
+let PREF="CAD";try{PREF=localStorage.getItem("fw-cur")||"CAD"}catch{}
+const inPref=(n,c)=>toCAD(n,c)/(RATE[PREF]||1);
+const fmtP=(n,c)=>(c===PREF?"":"<span class=\"approx\">≈</span>")+fmt(inPref(n,c),PREF);
+async function loadRates(){try{const r=await fetch("https://open.er-api.com/v6/latest/CAD");const j=await r.json();if(j&&j.rates){for(const k in RATE)if(j.rates[k])RATE[k]=1/j.rates[k]}}catch{}}
 const fmt=(n,c)=>{try{return new Intl.NumberFormat("en-CA",{style:"currency",currency:c,maximumFractionDigits:0}).format(n)}catch{return c+" "+Math.round(n)}};
 const toCAD=(n,c)=>n*(RATE[c]||1.36);
 const ago=m=>m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} d ago`;
@@ -339,6 +356,7 @@ const STEPS=8;
 const root=document.documentElement;let big=false;
 try{big=localStorage.getItem("fw-big")==="1";if(localStorage.getItem("fw-theme"))root.dataset.theme=localStorage.getItem("fw-theme")}catch{}
 const applyFs=()=>{root.style.setProperty("--fs",big?"1.2":"1");$("#fsBtn").setAttribute("aria-pressed",big)};applyFs();
+$("#prefCur").value=PREF;$("#prefCur").onchange=()=>{PREF=$("#prefCur").value;try{localStorage.setItem("fw-cur",PREF)}catch{};$("#cur").value=PREF;renderDeals();renderAlerts()};
 $("#fsBtn").onclick=()=>{big=!big;applyFs();try{localStorage.setItem("fw-big",big?"1":"0")}catch{}};
 $("#themeBtn").onclick=()=>{const dark=root.dataset.theme==="dark"||(!root.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("fw-theme",root.dataset.theme)}catch{}};
 
@@ -483,23 +501,34 @@ function reset(){S.from=S.to=null;S.when="any";S.cabin="any";S.stops="ANY";S.cha
 function confetti(){const c=$("#confetti");c.innerHTML="";const cols=["#FF6B35","#FFC94A","#1F8A70","#14213D","#2AABEE"];for(let i=0;i<60;i++){const s=document.createElement("i");s.style.left=Math.random()*100+"vw";s.style.background=cols[i%5];s.style.animationDelay=Math.random()*.5+"s";s.style.animationDuration=1.3+Math.random()+"s";c.appendChild(s)}setTimeout(()=>c.innerHTML="",2600)}
 
 let DEALS=[
-{from:"YYZ",to:"LIS",airline:"TS",airlineName:"Air Transat",cabin:"economy",price:398,was:890,cur:"CAD",type:"error",title:"Toronto to Lisbon — pricing mistake, book direct with the airline",age:12},
+{from:"YYZ",to:"LIS",airline:"TS",airlineName:"Air Transat",trip:"round_trip",cabin:"economy",price:398,was:890,cur:"CAD",type:"error",title:"Toronto to Lisbon — pricing mistake, book direct with the airline",age:12},
 {from:"YYZ",to:"NRT",airline:"AC",airlineName:"Air Canada",alliance:"Star Alliance",fareClass:"P",cabin:"business",price:2140,was:5600,cur:"CAD",type:"flash",title:"Toronto to Tokyo in business, flash sale ends Tuesday",age:41},
-{from:"YUL",to:"CDG",airline:"AF",airlineName:"Air France",alliance:"SkyTeam",cabin:"economy",price:441,was:820,cur:"CAD",type:"flash",title:"Montreal to Paris nonstop, bag included",age:65},
+{from:"YUL",to:"CDG",airline:"AF",airlineName:"Air France",alliance:"SkyTeam",trip:"round_trip",nonstop:true,cabin:"economy",price:441,was:820,cur:"CAD",type:"flash",title:"Montreal to Paris nonstop, bag included",age:65},
 {from:"LHE",to:"KUL",airline:"MH",airlineName:"Malaysia Airlines",alliance:"oneworld",cabin:"economy",price:52000,was:98000,cur:"PKR",type:"flash",title:"Lahore to Kuala Lumpur, Malaysia Airlines promo",age:90},
 {from:"JFK",to:"DUB",cabin:"economy",price:289,was:640,cur:"USD",type:"flash",title:"New York to Dublin nonstop",age:140},
 {from:"YYZ",to:"DEL",airline:"QR",airlineName:"Qatar Airways",alliance:"oneworld",fareClass:"J",cabin:"business",price:2880,was:7100,cur:"CAD",type:"mistake",title:"Toronto to Delhi business — likely mistake fare",age:18},
 ];
 let filter="all";
+$("#deals").addEventListener("click",e=>{const b=e.target.closest("[data-miles]");if(!b)return;const box=$("#miles-"+b.dataset.miles);const on=b.getAttribute("aria-expanded")!=="true";b.setAttribute("aria-expanded",on);box.classList.toggle("open",on)});
 $("#filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;$$("#filters button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderDeals()});
 const TYPE={error:"Error fare",mistake:"Mistake fare",flash:"Flash sale",deal:"Deal"};
-const flag=code=>{const c=(META[code]||[])[0];return c?String.fromCodePoint(...[...c.toUpperCase()].map(ch=>0x1F1E6+ch.charCodeAt(0)-65))+" ":""};
+const flag=code=>{const c=(META[code]||[])[0];return c?`<img src="https://flagcdn.com/24x18/${c.toLowerCase()}.png" alt="" loading="lazy" onerror="this.style.display='none'">`:""};
+const TRIP={round_trip:"round trip",one_way:"one way"};
+function describe(d){
+  const parts=[];
+  if(d.trip)parts.push(TRIP[d.trip]);
+  if(d.nonstop)parts.push("nonstop");
+  let line=parts.join(" · ")||"Fare";
+  if(d.from&&d.to)line+=` from ${CITY[d.from]||d.from} to ${CITY[d.to]||d.to}`;else if(d.to)line+=` to ${CITY[d.to]||d.to}`;else if(d.from)line+=` from ${CITY[d.from]||d.from}`;
+  if(d.airlineName)line+=` on ${d.airlineName}`;
+  return line.charAt(0).toUpperCase()+line.slice(1)+".";
+}
 function km(a,b){const A=META[a],B=META[b];if(!A||!B||A[2]==null||B[2]==null)return null;const r=Math.PI/180,dLat=(B[2]-A[2])*r,dLon=(B[3]-A[3])*r,la1=A[2]*r,la2=B[2]*r;const h=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return Math.round(6371*2*Math.asin(Math.sqrt(h)))}
 const CABIN_X={economy:1,premium:1.8,business:3.2,first:4.5};
 function rating(d){const dist=km(d.from,d.to);if(!dist||!d.price)return null;const base=(150+0.13*dist)*(CABIN_X[d.cabin]||1);const sc=base/toCAD(d.price,d.cur)+(d.type==="error"||d.type==="mistake"?.3:0);
   return sc>=2?["🔥🔥🔥","Unmissable"]:sc>=1.5?["🔥🔥","Great deal"]:sc>=1.15?["🔥","Good price"]:["⭐","Fair"]}
 function milesLine(d){const dist=km(d.from,d.to);if(!dist)return"";const mi=Math.round(dist*0.621);const [lo,hi]={economy:[.5,1],premium:[1,1.25],business:[1.25,2],first:[1.5,3]}[d.cabin]||[.5,1];
-  return `${dist.toLocaleString()} km each way${d.fareClass?` · fare class ${d.fareClass}`:""} · ≈ ${(mi*2*lo).toLocaleString()}–${(mi*2*hi).toLocaleString()} miles round trip on distance-based programs (estimate)`}
+  return `<b>${dist.toLocaleString()} km</b> each way${d.fareClass?` · fare class <b>${d.fareClass}</b>`:""}<br>≈ <b>${(mi*2*lo).toLocaleString()}–${(mi*2*hi).toLocaleString()} miles</b> round trip on distance-based programs. Estimate only — your program's earning chart decides.`}
 const GCABIN={business:" business class",first:" first class",premium:" premium economy"};
 const gflights=(o,d,c)=>"https://www.google.com/travel/flights?q="+encodeURIComponent(`Flights from ${o}${d?" to "+d:""}${GCABIN[c]||""}`);
 const META={};AIRPORTS.forEach(a=>META[a[0]]=[a[3],a[5],a[6],a[7]]);
@@ -509,13 +538,13 @@ function matches(p){return DEALS.filter(d=>d.from===p.origin&&destOk(p.destinati
 function renderDeals(){
   const my=alerts[0]?alerts[0].from:(S.from?S.from[0]:null);
   const list=DEALS.filter(d=>filter==="all"||(filter==="error"&&(d.type==="error"||d.type==="mistake"))||(filter==="business"&&(d.cabin==="business"||d.cabin==="first"))||(filter==="mine"&&my&&d.from===my));
-  $("#deals").innerHTML=list.length?list.map(d=>`<a class="deal ${d.type}" href="${d.from?gflights(d.from,d.to,d.cabin):(d.book_url||"#")}" target="_blank" rel="noopener">
-    <div class="row1"><div class="price">${d.price?fmt(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmt(d.was,d.cur)}</small>`:""}</div><div class="tags"><span class="tag ${d.type}">${TYPE[d.type]||"Deal"}</span>${(r=>r?`<span class="tag fire" title="${r[1]}">${r[0]} ${r[1]}</span>`:"")(rating(d))}</div></div>
-    ${d.from||d.to?`<div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Various cities"} → ${d.to?flag(d.to)+(CITY[d.to]||d.to):"several cities"}</div>`:`<div class="cities">${d.title}</div>`}
-    ${d.airline?`<div class="airline"><span class="al">${d.airline}</span>${d.airlineName||d.airline}${d.alliance?`<span class="alli">${{"Star Alliance":"⭐","SkyTeam":"🔵","oneworld":"🔴"}[d.alliance]||""} ${d.alliance}</span>`:""}${d.cabin&&d.cabin!=="economy"?` · ${CABIN[d.cabin]||d.cabin}`:""}</div>`:(d.cabin&&d.cabin!=="economy"?`<div class="airline">${CABIN[d.cabin]||d.cabin}</div>`:"")}
-    ${d.from||d.to?`<div class="meta">${d.title}</div>`:""}
-    ${(m=>m?`<div class="miles">✈️ ${m}</div>`:"")(milesLine(d))}
-    <div class="foot"><span>Spotted ${ago(d.age)}</span><b>Book on Google Flights ›</b></div></a>`).join("")
+  $("#deals").innerHTML=list.length?list.map((d,i)=>`<div class="deal ${d.type}">
+    <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}</div><div class="tags"><span class="tag ${d.type}">${TYPE[d.type]||"Deal"}</span>${(r=>r?`<span class="tag fire">${r[0]} ${r[1]}</span>`:"")(rating(d))}</div></div>
+    <div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Various cities"}<span class="arrow">→</span>${d.to?flag(d.to)+(CITY[d.to]||d.to):"Several cities"}</div>
+    <div class="chips">${d.airlineName?`<span>✈️ ${d.airlineName}</span>`:""}${d.alliance?`<span>${{"Star Alliance":"⭐","SkyTeam":"🔵","oneworld":"🔴"}[d.alliance]||""} ${d.alliance}</span>`:""}<span>💺 ${CABIN[d.cabin]||"Economy"}</span></div>
+    <div class="desc">${d.from||d.to?describe(d):d.title}</div>
+    <div class="miles" id="miles-${i}">${(m=>m?`<div style="margin-top:8px;font-size:.85rem;color:var(--muted);background:var(--paper);border-radius:10px;padding:10px 12px;line-height:1.4">${m}</div>`:`<div class="desc">Distance unknown for this route.</div>`)(milesLine(d))}</div>
+    <div class="foot"><button type="button" class="milesBtn" data-miles="${i}" aria-expanded="false">🏅 Miles earned</button><a class="book" href="${d.from?gflights(d.from,d.to,d.cabin):(d.book_url||"#")}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
   :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
 }
 
@@ -527,7 +556,7 @@ function renderAlerts(){
   $("#mineSub").textContent=alerts.length?`${alerts.length} route${alerts.length>1?"s":""} being watched.`:"Nothing yet.";
   $("#alerts").innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.paused?"paused":""}" data-id="${a.id}">
     <div class="cities">${CITY[a.from]||a.from} → ${destLabel(a.to)}</div>
-    <div class="meta">Under <em>${fmt(a.price,a.cur)}</em> · ${CABIN[a.cabin]} · ${a.airline||"any airline"} · ${whenText(a)}${a.lastLow?` · lowest seen <em>${fmt(a.lastLow,"CAD")}</em>`:""}${a.paused?" · <em>paused</em>":""}</div>
+    <div class="meta">Under <em>${fmtP(a.price,a.cur)}</em> · ${CABIN[a.cabin]} · ${a.airline||"any airline"} · ${whenText(a)}${a.lastLow?` · lowest seen <em>${fmtP(a.lastLow,"CAD")}</em>`:""}${a.paused?" · <em>paused</em>":""}</div>
     <div class="via">${a.channels.map(c=>`<span>${CH[c]||c}</span>`).join("")}</div>
     <div class="acts"><button data-act="pause">${a.paused?"Resume":"Pause"}</button><button data-act="del">Delete</button></div></div>`).join("")
   :`<div class="empty">You haven't set any alerts yet.<br><button class="btn btn-primary" onclick="showTab('new')">Set my first alert</button></div>`;
@@ -548,12 +577,13 @@ async function boot(){
       const cfg=await api("/config");serverChannels=cfg.channels||[];vapidKey=cfg.vapid_public_key||null;
       $$("#chOpts .opt[data-v]").forEach(b=>{if(!serverChannels.includes(b.dataset.v)){b.disabled=true;b.style.opacity=".45";b.querySelector("span:last-child").innerHTML+='<small>Coming soon</small>'}});
       const d=(await api("/deals?limit=40")).deals||[];
-      if(d.length){DEALS=d.map(x=>({from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals found`}
+      if(d.length){DEALS=d.map(x=>({from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals found`}
       if(!tg)alerts=((await api("/alerts")).alerts||[]).map(fromServer);
     }catch(e){console.warn("API unavailable, sample mode:",e.message)}
   }
   if(!API||!serverChannels){try{alerts=JSON.parse(localStorage.getItem("fw-alerts")||"[]")}catch{alerts=[]}}
-  renderDeals();renderAlerts();go(0);
+  $("#cur").value=PREF;renderDeals();renderAlerts();go(0);
+  loadRates().then(()=>{renderDeals();renderAlerts()});
 }
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),3800)}
 boot();
