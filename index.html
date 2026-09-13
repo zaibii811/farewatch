@@ -128,8 +128,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .deal:nth-child(2){animation-delay:.06s}.deal:nth-child(3){animation-delay:.12s}.deal:nth-child(4){animation-delay:.18s}.deal:nth-child(5){animation-delay:.24s}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .deal .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.deal .price{flex:1 1 auto;min-width:0;white-space:nowrap;font-size:1.75rem}
-.approx{font-size:.7em;opacity:.6;margin-right:4px;vertical-align:middle}
+.deal .price{flex:1 1 auto;min-width:0;white-space:nowrap;font-size:1.85rem}
 .deal .price{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--blue)}
 .deal{border-left:6px solid var(--blue);min-width:0}.deal.error,.deal.mistake{border-left-color:var(--signal)}.deal.flash{border-left-color:var(--amber)}
 .deal .price small{display:block;font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:0;margin-top:3px}
@@ -325,9 +324,10 @@ const CH={whatsapp:"WhatsApp",telegram:"Telegram",push:"This device",email:"Emai
 const RATE={CAD:1,USD:1.36,EUR:1.48,GBP:1.72,PKR:0.0049,INR:0.0162,AED:0.37,MYR:0.31}; // CAD per unit; refreshed live when possible
 let PREF="CAD";try{PREF=localStorage.getItem("fw-cur")||"CAD"}catch{}
 const inPref=(n,c)=>toCAD(n,c)/(RATE[PREF]||1);
-const fmtP=(n,c)=>(c===PREF?"":"<span class=\"approx\">≈</span>")+fmt(inPref(n,c),PREF);
+const fmtP=(n,c)=>fmt(inPref(n,c),PREF);
 async function loadRates(){try{const r=await fetch("https://open.er-api.com/v6/latest/CAD");const j=await r.json();if(j&&j.rates){for(const k in RATE)if(j.rates[k])RATE[k]=1/j.rates[k]}}catch{}}
-const fmt=(n,c)=>{try{return new Intl.NumberFormat("en-CA",{style:"currency",currency:c,maximumFractionDigits:0}).format(n)}catch{return c+" "+Math.round(n)}};
+const SYM={CAD:"C$",USD:"$",EUR:"€",GBP:"£",PKR:"Rs ",INR:"₹",AED:"AED ",MYR:"RM "};
+const fmt=(n,c)=>(SYM[c]||c+" ")+Math.round(n).toLocaleString("en-CA");
 const toCAD=(n,c)=>n*(RATE[c]||1.36);
 const ago=m=>m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} d ago`;
 const CODE_NAME=Object.fromEntries($$("#airline option[data-code]").map(o=>[o.dataset.code,o.textContent]));
