@@ -36,16 +36,18 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .top .tools button[aria-pressed="true"]{background:var(--sky);border-color:var(--ink)}
 main{flex:1;padding:8px 18px 110px}
 .screen{display:none}.screen.on{display:block}
-h1{font-size:1.7rem;line-height:1.1;letter-spacing:-.025em;margin:14px 0 6px;font-weight:800;background:var(--hero);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+h1{font-size:1.7rem;line-height:1.1;letter-spacing:-.025em;margin:14px 0 6px;font-weight:800;color:var(--text)}
 .lede{color:var(--muted);margin:0 0 18px;font-size:1rem}
 
-nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs .bar{pointer-events:auto;width:min(520px,100%);background:var(--card);border-top:1.5px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px 12px 10px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:var(--card);border-top:1.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:20;box-shadow:0 -10px 30px -20px rgba(20,32,74,.35)}
+nav.tabs .bar{width:min(520px,100%);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px 12px 10px}
 nav.tabs button{background:none;border:0;border-radius:14px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--muted);min-height:58px}
 nav.tabs button .em{font-size:1.5rem;line-height:1}
-nav.tabs button[aria-selected="true"]{color:var(--blue);background:var(--sky)}
-nav.tabs button.main{background:var(--hero);color:#fff;box-shadow:0 6px 16px -6px rgba(47,107,255,.6)}
-nav.tabs button.main[aria-selected="true"]{color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55)}
+nav.tabs button{opacity:.6}
+nav.tabs button[aria-selected="true"]{opacity:1;color:#fff;background:var(--blue);box-shadow:0 6px 16px -6px rgba(47,107,255,.7)}
+nav.tabs button.main{opacity:1;background:var(--hero);color:#fff}
+nav.tabs button.main:not([aria-selected="true"]){opacity:.55;filter:saturate(.6)}
+nav.tabs button.main[aria-selected="true"]{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--blue)}
 
 .route{position:relative;height:170px;margin:4px 0 12px;background:var(--hero);border-radius:24px;padding:10px 10px 0;box-shadow:0 18px 40px -18px rgba(47,107,255,.6);overflow:hidden}
 .route::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.25),transparent 40%),radial-gradient(circle at 85% 80%,rgba(255,255,255,.15),transparent 35%)}
@@ -136,7 +138,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .tag.error,.tag.mistake{background:var(--signal);color:#fff}.tag.flash{background:var(--amber);color:#3A2A00}.tag.deal{background:var(--violet);color:#fff}
 .deal .cities{font-weight:800;font-size:1.2rem;margin:12px 0 2px;letter-spacing:-.01em;display:flex;align-items:center;flex-wrap:wrap}
 .deal .tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;max-width:52%;flex:0 1 auto}
-.tag.fire{background:var(--go-soft);color:#0B5C42}
+.tag.fire{background:var(--go);color:#fff}
 .deal .airline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:700;font-size:.92rem;margin-bottom:4px}
 .deal .airline .al{background:var(--ink);color:#fff;border-radius:6px;padding:2px 6px;font-size:.75rem;letter-spacing:.04em}
 :root[data-theme="dark"] .deal .airline .al{background:var(--amber);color:#3A2A00}
@@ -177,8 +179,8 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 
   <main>
     <section class="screen" id="s-deals">
-      <h1>Cheap flights, spotted today</h1>
-      <p class="lede">Error fares and flash sales, found for you around the clock. Tap one to book.</p>
+      <h1>Fresh flight deals</h1>
+      <p class="lede">Tap a fare to book it.</p>
       <div class="live"><i></i><span id="liveTxt">Scanning fares right now</span></div>
       <div id="tgBanner"></div>
       <div class="filters" id="filters">
@@ -249,14 +251,13 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
         <p class="hint" style="margin:16px 0 8px">Airline</p>
         <select class="big" id="airline">
           <option value="">Any airline</option>
-          <optgroup label="Alliances"><option data-code="ALLIANCE_STAR">⭐ Star Alliance</option><option data-code="ALLIANCE_SKYTEAM">🔵 SkyTeam</option><option data-code="ALLIANCE_ONEWORLD">🔴 oneworld</option></optgroup>
-          <optgroup label="Airlines">
+
           <option data-code="AC">Air Canada</option><option data-code="WS">WestJet</option><option data-code="TS">Air Transat</option><option data-code="PD">Porter</option>
           <option data-code="PK">PIA</option><option data-code="MH">Malaysia Airlines</option><option data-code="AK">AirAsia</option>
           <option data-code="UA">United</option><option data-code="DL">Delta</option><option data-code="AA">American</option>
           <option data-code="BA">British Airways</option><option data-code="LH">Lufthansa</option><option data-code="AF">Air France</option><option data-code="KL">KLM</option>
           <option data-code="EK">Emirates</option><option data-code="QR">Qatar Airways</option><option data-code="EY">Etihad</option><option data-code="TK">Turkish Airlines</option><option data-code="SV">Saudia</option>
-          <option data-code="CX">Cathay Pacific</option><option data-code="SQ">Singapore Airlines</option><option data-code="JL">Japan Airlines</option><option data-code="NH">ANA</option><option data-code="AI">Air India</option></optgroup>
+          <option data-code="CX">Cathay Pacific</option><option data-code="SQ">Singapore Airlines</option><option data-code="JL">Japan Airlines</option><option data-code="NH">ANA</option><option data-code="AI">Air India</option>
         </select>
       </div>
 
@@ -550,10 +551,9 @@ function renderDeals(){
   $("#deals").innerHTML=list.length?list.map((d,i)=>`<div class="deal ${d.type}">
     <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}</div><div class="tags"><span class="tag ${d.type}">${TYPE[d.type]||"Deal"}</span>${(r=>r?`<span class="tag fire">${r[0]} ${r[1]}</span>`:"")(rating(d))}</div></div>
     <div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Various cities"}<span class="arrow">→</span>${d.to?flag(d.to)+(CITY[d.to]||d.to):"Several cities"}</div>
-    <div class="chips">${d.airlineName?`<span>✈️ ${d.airlineName}</span>`:""}${d.alliance?`<span>${{"Star Alliance":"⭐","SkyTeam":"🔵","oneworld":"🔴"}[d.alliance]||""} ${d.alliance}</span>`:""}<span>💺 ${CABIN[d.cabin]||"Economy"}</span></div>
+    <div class="chips">${d.airlineName?`<span>✈️ ${d.airlineName}</span>`:""}<span>💺 ${CABIN[d.cabin]||"Economy"}</span></div>
     <div class="desc">${d.from||d.to?describe(d):d.title}</div>
-    <div class="miles" id="miles-${i}">${(m=>m?`<div style="margin-top:8px;font-size:.85rem;color:var(--muted);background:var(--paper);border-radius:10px;padding:10px 12px;line-height:1.4">${m}</div>`:`<div class="desc">Distance unknown for this route.</div>`)(milesLine(d))}</div>
-    <div class="foot"><button type="button" class="milesBtn" data-miles="${i}" aria-expanded="false">🏅 Miles earned</button><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
+    <div class="foot"><span>Spotted ${ago(d.age)}</span><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
   :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
 }
 
