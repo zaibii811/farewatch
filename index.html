@@ -6,21 +6,22 @@
 <title>FareWatch</title>
 <!-- Point this at your Render API to go live; leave empty for sample mode -->
 <meta name="farewatch-api" content="https://farewatch-he0q.onrender.com">
-<meta name="theme-color" content="#14213D">
+<meta name="theme-color" content="#2F6BFF">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#14213D; --paper:#F7F9FC; --sky:#E4EEF9; --line:#D3DDEB; --card:#FFFFFF; --text:#14213D; --muted:#5B6B8A;
-  --signal:#FF6B35; --signal-ink:#C2461A; --go:#1F8A70; --go-soft:#DDF3EC; --amber:#FFC94A; --fs:1;
+  --ink:#1B2A6B; --paper:#F2F6FF; --sky:#E3ECFF; --line:#CBD8F5; --card:#FFFFFF; --text:#14204A; --muted:#5B6A99;
+  --signal:#FF5A36; --signal-ink:#C93D1F; --go:#00B37E; --go-soft:#DDF7EE; --amber:#FFC42E; --blue:#2F6BFF; --violet:#7C5CFF; --fs:1;
+  --hero:linear-gradient(135deg,#2F6BFF 0%,#6A5CFF 55%,#B14DFF 100%);
 }
-:root[data-theme="dark"]{ --paper:#0B1226; --sky:#141F3D; --line:#2A3A5E; --card:#16213F; --text:#EEF2FA; --muted:#A5B2CC; --go-soft:#123A31; }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#0B1226; --sky:#141F3D; --line:#2A3A5E; --card:#16213F; --text:#EEF2FA; --muted:#A5B2CC; --go-soft:#123A31; } }
+:root[data-theme="dark"]{ --paper:#0B1030; --sky:#182052; --line:#2C3770; --card:#141B45; --text:#EEF2FF; --muted:#A9B4DC; --go-soft:#0F3A2E; --ink:#EEF2FF; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#0B1030; --sky:#182052; --line:#2C3770; --card:#141B45; --text:#EEF2FF; --muted:#A9B4DC; --go-soft:#0F3A2E; --ink:#EEF2FF; } }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{font-size:calc(17px * var(--fs))}
-body{margin:0;background:var(--paper);color:var(--text);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100dvh}
+body{margin:0;background:var(--paper);background-image:radial-gradient(60% 40% at 50% -10%,rgba(47,107,255,.14),transparent 70%);background-repeat:no-repeat;color:var(--text);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100dvh}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 :focus-visible{outline:3px solid var(--signal);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -28,57 +29,56 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;position:relative}
 .top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 0}
 .brand{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
-.brand i{width:28px;height:28px;border-radius:9px;background:var(--signal);display:grid;place-items:center;color:#fff;font-style:normal;font-size:.9rem}
+.brand i{width:28px;height:28px;border-radius:9px;background:var(--hero);display:grid;place-items:center;color:#fff;font-style:normal;font-size:.9rem}
 .top .tools{display:flex;gap:6px}
 .top .tools button{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:6px 10px;font-weight:700;font-size:.85rem;min-height:40px}
 .top .tools button[aria-pressed="true"]{background:var(--sky);border-color:var(--ink)}
 main{flex:1;padding:8px 18px 110px}
 .screen{display:none}.screen.on{display:block}
-h1{font-size:1.7rem;line-height:1.1;letter-spacing:-.025em;margin:14px 0 6px;font-weight:800}
+h1{font-size:1.7rem;line-height:1.1;letter-spacing:-.025em;margin:14px 0 6px;font-weight:800;background:var(--hero);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
 .lede{color:var(--muted);margin:0 0 18px;font-size:1rem}
 
 nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;padding-bottom:env(safe-area-inset-bottom)}
 nav.tabs .bar{pointer-events:auto;width:min(520px,100%);background:var(--card);border-top:1.5px solid var(--line);display:grid;grid-template-columns:1fr 1.3fr 1fr;padding:8px 10px 10px}
 nav.tabs button{background:none;border:0;border-radius:14px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--muted);min-height:58px}
-nav.tabs button svg{width:26px;height:26px}
-nav.tabs button[aria-selected="true"]{color:var(--text);background:var(--sky)}
+nav.tabs button .em{font-size:1.5rem;line-height:1}
+nav.tabs button[aria-selected="true"]{color:var(--blue);background:var(--sky)}
 nav.tabs button.main{background:var(--signal);color:#fff;transform:translateY(-14px);border-radius:18px;box-shadow:0 8px 20px -6px rgba(255,107,53,.7)}
 nav.tabs button.main[aria-selected="true"]{background:var(--signal-ink)}
 
-.route{position:relative;height:150px;margin:4px -6px 8px}
+.route{position:relative;height:170px;margin:4px 0 12px;background:var(--hero);border-radius:24px;padding:10px 10px 0;box-shadow:0 18px 40px -18px rgba(47,107,255,.6);overflow:hidden}
+.route::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.25),transparent 40%),radial-gradient(circle at 85% 80%,rgba(255,255,255,.15),transparent 35%)}
+.route svg{position:relative}
 .route svg{width:100%;height:100%;overflow:visible}
-.route .arc{fill:none;stroke:var(--line);stroke-width:2.5;stroke-dasharray:6 8}
-.route .arc.live{stroke:var(--signal);stroke-dasharray:1;transition:stroke-dashoffset .8s ease}
-.route .dot{fill:var(--card);stroke:var(--ink);stroke-width:3}
-:root[data-theme="dark"] .route .dot{stroke:var(--amber)}
-.route .lbl{font-weight:800;font-size:15px;fill:var(--text)}
-.plane-el{position:absolute;width:34px;height:34px;left:0;top:0;offset-path:path("M 40 110 Q 250 -10 460 110");offset-distance:6%;offset-rotate:auto;transition:offset-distance .9s cubic-bezier(.4,0,.2,1)}
+.route .arc{fill:none;stroke:rgba(255,255,255,.45);stroke-width:2.5;stroke-dasharray:6 8}
+.route .arc.live{stroke:#FFC42E;stroke-width:3.5;stroke-dasharray:1;transition:stroke-dashoffset .8s ease}
+.route .dot{fill:#fff;stroke:#FFC42E;stroke-width:4}
+.route .lbl{font-weight:800;font-size:15px;fill:#fff}
+.plane-el{position:absolute;width:34px;height:34px;left:10px;top:10px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35));offset-path:path("M 40 110 Q 250 -10 460 110");offset-distance:6%;offset-rotate:auto;transition:offset-distance .9s cubic-bezier(.4,0,.2,1)}
 .plane-el.flying{animation:fly 2.2s ease-in-out infinite alternate}
 @keyframes fly{from{offset-distance:12%}to{offset-distance:88%}}
 .plane-el svg{width:34px;height:34px;display:block;transform:rotate(90deg)}
 
 .progress{display:flex;gap:6px;margin:6px 0 14px}
 .progress i{flex:1;height:5px;border-radius:3px;background:var(--line)}
-.progress i.fill{background:var(--ink)}
-:root[data-theme="dark"] .progress i.fill{background:var(--amber)}
+.progress i.fill{background:var(--blue)}
 .step{display:none}.step.on{display:block;animation:in .28s ease-out}
 @keyframes in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 .q{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;margin:0 0 4px;line-height:1.15}
 .hint{color:var(--muted);font-size:.95rem;margin:0 0 14px}
 .big{width:100%;border:2px solid var(--line);border-radius:16px;background:var(--card);min-height:62px;padding:0 18px;font-size:1.2rem;font-weight:600}
-.big:focus{border-color:var(--ink);outline:none}
+.big:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(47,107,255,.15)}
 .big::placeholder{color:#9AA8C2;font-weight:500}
 .results{margin-top:8px;display:grid;gap:6px;max-height:44vh;overflow:auto}
 .results button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:14px;background:var(--card);padding:12px 14px;min-height:56px}
 .results button b{font-size:1.02rem}.results button small{display:block;color:var(--muted);font-weight:500}
 .results button code{font-family:inherit;font-weight:800;color:var(--muted);background:var(--sky);padding:4px 8px;border-radius:8px}
-.results button:hover,.results button:focus{border-color:var(--ink)}
+.results button:hover,.results button:focus{border-color:var(--blue)}
 .options{display:grid;gap:10px}
 .options.two{grid-template-columns:1fr 1fr}
 .opt{border:2px solid var(--line);border-radius:16px;background:var(--card);padding:14px 16px;text-align:left;min-height:62px;display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.05rem}
 .opt small{display:block;color:var(--muted);font-weight:500;font-size:.88rem}
-.opt[aria-pressed="true"]{border-color:var(--ink);background:var(--sky)}
-:root[data-theme="dark"] .opt[aria-pressed="true"]{border-color:var(--amber)}
+.opt[aria-pressed="true"]{border-color:var(--blue);background:var(--sky);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
 .opt .ico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800;flex:none}
 .dates{display:none;gap:10px;margin-top:10px}.dates.open{display:grid;grid-template-columns:1fr 1fr}
 .dates input{border:2px solid var(--line);border-radius:14px;background:var(--card);min-height:56px;padding:0 12px;width:100%}
@@ -108,8 +108,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .filters{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}
 .filters button{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:9px 15px;font-weight:700;font-size:.92rem;min-height:42px}
 .filters.wrap{flex-wrap:wrap;overflow:visible}
-.filters button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-:root[data-theme="dark"] .filters button[aria-pressed="true"]{background:var(--amber);color:#3A2A00;border-color:var(--amber)}
+.filters button[aria-pressed="true"]{background:var(--blue);color:#fff;border-color:var(--blue)}
 .live{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:.85rem;font-weight:700;margin-bottom:8px}
 .live i{width:8px;height:8px;border-radius:50%;background:#2ECC71;box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:ping 1.8s infinite}
 @keyframes ping{70%{box-shadow:0 0 0 9px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
@@ -118,14 +117,15 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .deal:nth-child(2){animation-delay:.06s}.deal:nth-child(3){animation-delay:.12s}.deal:nth-child(4){animation-delay:.18s}.deal:nth-child(5){animation-delay:.24s}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .deal .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.deal .price{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.deal .price{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--blue)}
+.deal{border-left:6px solid var(--blue)}.deal.error,.deal.mistake{border-left-color:var(--signal)}.deal.flash{border-left-color:var(--amber)}
 .deal .price small{display:block;font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:0;margin-top:3px}
 .tag{font-weight:800;font-size:.72rem;padding:5px 9px;border-radius:8px;white-space:nowrap}
-.tag.error,.tag.mistake{background:var(--signal);color:#fff}.tag.flash{background:var(--amber);color:#3A2A00}.tag.deal{background:var(--sky);color:var(--text)}
+.tag.error,.tag.mistake{background:var(--signal);color:#fff}.tag.flash{background:var(--amber);color:#3A2A00}.tag.deal{background:var(--violet);color:#fff}
 .deal .cities{font-weight:800;font-size:1.15rem;margin:10px 0 2px;letter-spacing:-.01em}
 .deal .meta{color:var(--muted);font-size:.9rem}
 .deal .foot{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted);font-weight:600}
-.deal .foot b{color:var(--signal)}
+.deal .foot b{color:var(--blue)}
 .empty{border:2px dashed var(--line);border-radius:20px;padding:30px 20px;text-align:center;color:var(--muted)}
 .empty .btn{margin-top:14px}
 
@@ -137,9 +137,8 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .alert .via{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.alert .via span{background:var(--sky);border-radius:8px;padding:3px 9px;font-size:.82rem;font-weight:700}
 .alert .acts{display:flex;gap:8px}.alert .acts button{flex:1;border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:10px;font-weight:700;min-height:46px}
 
-.toast{position:fixed;left:50%;bottom:104px;transform:translate(-50%,140px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:14px;font-weight:700;max-width:88vw;z-index:50;transition:transform .25s;text-align:center}
+.toast{position:fixed;left:50%;bottom:104px;transform:translate(-50%,140px);background:#14204A;color:#fff;padding:13px 20px;border-radius:14px;font-weight:700;max-width:88vw;z-index:50;transition:transform .25s;text-align:center}
 .toast.show{transform:translate(-50%,0)}
-:root[data-theme="dark"] .toast{background:var(--amber);color:#3A2A00}
 .in-telegram nav.tabs .bar{grid-template-columns:1fr 1.3fr}
 </style>
 </head>
@@ -173,7 +172,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
           <text class="lbl" x="28" y="140" text-anchor="start" id="lblFrom">From</text>
           <text class="lbl" x="472" y="140" text-anchor="end" id="lblTo">To</text>
         </svg>
-        <div class="plane-el" id="plane"><svg viewBox="0 0 24 24" fill="var(--signal)"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>
+        <div class="plane-el" id="plane"><svg viewBox="0 0 24 24" fill="#fff"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>
       </div>
       <div class="progress" id="progress"></div>
 
@@ -283,9 +282,9 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
   </main>
 
   <nav class="tabs" aria-label="Sections"><div class="bar">
-    <button data-tab="deals" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>Deals</button>
-    <button data-tab="new" class="main" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New alert</button>
-    <button data-tab="mine" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4"/></svg>My alerts</button>
+    <button data-tab="deals" aria-selected="false"><span class="em">🔥</span>Deals</button>
+    <button data-tab="new" class="main" aria-selected="true"><span class="em">✈️</span>New alert</button>
+    <button data-tab="mine" aria-selected="false"><span class="em">🔔</span>My alerts</button>
   </div></nav>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -484,7 +483,8 @@ let DEALS=[
 let filter="all";
 $("#filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;$$("#filters button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderDeals()});
 const TYPE={error:"Error fare",mistake:"Mistake fare",flash:"Flash sale",deal:"Deal"};
-const gflights=(o,d)=>"https://www.google.com/travel/flights?q="+encodeURIComponent(`Flights from ${o}${d?" to "+d:""}`);
+const GCABIN={business:" business class",first:" first class",premium:" premium economy"};
+const gflights=(o,d,c)=>"https://www.google.com/travel/flights?q="+encodeURIComponent(`Flights from ${o}${d?" to "+d:""}${GCABIN[c]||""}`);
 const META={};AIRPORTS.forEach(a=>META[a[0]]=[a[3],a[5]]);
 const RCOUNTRIES={ME:"AE,SA,QA,BH,KW,OM,JO,LB,IL,IQ,IR,TR,EG",SA:"PK,IN,BD,LK,NP,MV,BT,AF",SEA:"MY,SG,TH,VN,ID,PH,KH,LA,MM,BN",EA:"JP,KR,CN,HK,TW,MO,MN",CAR:"MX,CU,DO,JM,BS,BB,AW,CW,PR,TT,KY,TC,AG,LC,VC,GD,SX,MF,VI,VG,BM,BZ,CR,PA",US:"US",CA:"CA",LATAM:"GT,HN,SV,NI"},RCONT={EU:"EU",LATAM:"SA",AF:"AF",OC:"OC"};
 function destOk(spec,code){if(!spec)return true;if(!code)return false;const m=META[code]||[];if(spec.startsWith("C:"))return m[0]===spec.slice(2);if(spec.startsWith("R:")){const r=spec.slice(2);return (RCOUNTRIES[r]||"").split(",").includes(m[0])||RCONT[r]===m[1]}return code===spec}
@@ -492,10 +492,9 @@ function matches(p){return DEALS.filter(d=>d.from===p.origin&&destOk(p.destinati
 function renderDeals(){
   const my=alerts[0]?alerts[0].from:(S.from?S.from[0]:null);
   const list=DEALS.filter(d=>filter==="all"||(filter==="error"&&(d.type==="error"||d.type==="mistake"))||(filter==="business"&&(d.cabin==="business"||d.cabin==="first"))||(filter==="mine"&&my&&d.from===my));
-  $("#deals").innerHTML=list.length?list.map(d=>`<a class="deal" href="${d.book_url||(d.from?gflights(d.from,d.to):"#")}" target="_blank" rel="noopener">
+  $("#deals").innerHTML=list.length?list.map(d=>`<a class="deal ${d.type}" href="${d.from?gflights(d.from,d.to,d.cabin):(d.book_url||"#")}" target="_blank" rel="noopener">
     <div class="row1"><div class="price">${d.price?fmt(d.price,d.cur):"See post"}${d.was?`<small>usually ${fmt(d.was,d.cur)}</small>`:""}</div><span class="tag ${d.type}">${TYPE[d.type]||"Deal"}</span></div>
-    <div class="cities">${d.from?(CITY[d.from]||d.from):"?"} → ${d.to?(CITY[d.to]||d.to):"several cities"}</div>
-    <div class="meta">${d.title}${d.cabin&&d.cabin!=="economy"?" · "+(CABIN[d.cabin]||d.cabin):""}</div>
+    ${d.from||d.to?`<div class="cities">${d.from?(CITY[d.from]||d.from):"Various cities"} → ${d.to?(CITY[d.to]||d.to):"several cities"}</div><div class="meta">${d.title}${d.cabin&&d.cabin!=="economy"?" · "+(CABIN[d.cabin]||d.cabin):""}</div>`:`<div class="cities">${d.title}</div><div class="meta">${d.cabin&&d.cabin!=="economy"?(CABIN[d.cabin]||d.cabin):"Tap to search this fare"}</div>`}
     <div class="foot"><span>Spotted ${ago(d.age)}</span><b>Book on Google Flights ›</b></div></a>`).join("")
   :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
 }
