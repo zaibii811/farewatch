@@ -2,609 +2,519 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FareWatch</title>
 <!-- Point this at your Render API to go live; leave empty for sample mode -->
 <meta name="farewatch-api" content="https://farewatch-he0q.onrender.com">
-<title>FareWatch — cheap flights find you</title>
+<meta name="theme-color" content="#14213D">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#14213D; --ink-2:#2B3A5C; --paper:#F7F9FC; --sky:#E4EEF9; --line:#C9D6E8;
-  --signal:#FF6B35; --signal-ink:#B3451D; --amber:#FFC94A; --board:#0F1A33; --board-text:#FFD983;
-  --go:#1F8A70; --go-soft:#DDF3EC; --text:#14213D; --muted:#5B6B8A; --card:#FFFFFF;
-  --fs:1; --radius:18px;
+  --ink:#14213D; --paper:#F7F9FC; --sky:#E4EEF9; --line:#D3DDEB; --card:#FFFFFF; --text:#14213D; --muted:#5B6B8A;
+  --signal:#FF6B35; --signal-ink:#C2461A; --go:#1F8A70; --go-soft:#DDF3EC; --amber:#FFC94A; --fs:1;
 }
-:root:not([data-theme="light"]){ @media (prefers-color-scheme: dark){
-  --paper:#0B1226; --sky:#141F3D; --line:#2C3B60; --text:#EEF2FA; --muted:#A5B2CC; --card:#16213F; --ink:#EEF2FA; --ink-2:#C9D6E8; --go-soft:#123A31;
-}}
-:root[data-theme="dark"]{ --paper:#0B1226; --sky:#141F3D; --line:#2C3B60; --text:#EEF2FA; --muted:#A5B2CC; --card:#16213F; --ink:#EEF2FA; --ink-2:#C9D6E8; --go-soft:#123A31; }
-
-*{box-sizing:border-box}
+:root[data-theme="dark"]{ --paper:#0B1226; --sky:#141F3D; --line:#2A3A5E; --card:#16213F; --text:#EEF2FA; --muted:#A5B2CC; --go-soft:#123A31; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#0B1226; --sky:#141F3D; --line:#2A3A5E; --card:#16213F; --text:#EEF2FA; --muted:#A5B2CC; --go-soft:#123A31; } }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{font-size:calc(17px * var(--fs))}
-body{margin:0;background:var(--paper);color:var(--text);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
-button,input,select{font:inherit;color:inherit}
-button{cursor:pointer}
+body{margin:0;background:var(--paper);color:var(--text);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100dvh}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 :focus-visible{outline:3px solid var(--signal);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,3vw,32px)}
+.app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;position:relative}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 0}
+.brand{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.brand i{width:28px;height:28px;border-radius:9px;background:var(--signal);display:grid;place-items:center;color:#fff;font-style:normal;font-size:.9rem}
+.top .tools{display:flex;gap:6px}
+.top .tools button{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:6px 10px;font-weight:700;font-size:.85rem;min-height:40px}
+.top .tools button[aria-pressed="true"]{background:var(--sky);border-color:var(--ink)}
+main{flex:1;padding:8px 18px 110px}
+.screen{display:none}.screen.on{display:block}
+h1{font-size:1.7rem;line-height:1.1;letter-spacing:-.025em;margin:14px 0 6px;font-weight:800}
+.lede{color:var(--muted);margin:0 0 18px;font-size:1rem}
 
-/* top bar */
-.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0;gap:12px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.35rem;letter-spacing:-.02em}
-.brand .plane{width:38px;height:38px;border-radius:12px;background:var(--signal);display:grid;place-items:center;color:#fff}
-.tools{display:flex;gap:8px;align-items:center}
-.tools button{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 14px;font-weight:700;min-height:44px}
-.tools button[aria-pressed="true"]{border-color:var(--ink);background:var(--sky)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs .bar{pointer-events:auto;width:min(520px,100%);background:var(--card);border-top:1.5px solid var(--line);display:grid;grid-template-columns:1fr 1.3fr 1fr;padding:8px 10px 10px}
+nav.tabs button{background:none;border:0;border-radius:14px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--muted);min-height:58px}
+nav.tabs button svg{width:26px;height:26px}
+nav.tabs button[aria-selected="true"]{color:var(--text);background:var(--sky)}
+nav.tabs button.main{background:var(--signal);color:#fff;transform:translateY(-14px);border-radius:18px;box-shadow:0 8px 20px -6px rgba(255,107,53,.7)}
+nav.tabs button.main[aria-selected="true"]{background:var(--signal-ink)}
 
-/* hero */
-.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:start;margin:12px 0 40px}
-@media(max-width:900px){.hero{grid-template-columns:1fr}}
-h1{font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:1.02;letter-spacing:-.03em;margin:8px 0 14px;font-weight:800}
-.lede{font-size:1.15rem;color:var(--muted);max-width:34ch;margin:0 0 22px}
-.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
-.btn{border:0;border-radius:14px;padding:16px 24px;font-weight:800;font-size:1.05rem;min-height:56px;display:inline-flex;align-items:center;gap:10px;transition:transform .08s}
-.btn:active{transform:scale(.98)}
-.btn-primary{background:var(--signal);color:#fff;box-shadow:0 6px 0 var(--signal-ink)}
-.btn-primary:active{box-shadow:0 2px 0 var(--signal-ink);transform:translateY(4px)}
-.btn-quiet{background:var(--card);border:2px solid var(--line);color:var(--text)}
-.sources{margin-top:26px;font-size:.95rem;color:var(--muted)}
-.sources span{display:inline-block;background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:4px 12px;margin:4px 6px 0 0;color:var(--text);font-weight:600}
+.route{position:relative;height:150px;margin:4px -6px 8px}
+.route svg{width:100%;height:100%;overflow:visible}
+.route .arc{fill:none;stroke:var(--line);stroke-width:2.5;stroke-dasharray:6 8}
+.route .arc.live{stroke:var(--signal);stroke-dasharray:1;transition:stroke-dashoffset .8s ease}
+.route .dot{fill:var(--card);stroke:var(--ink);stroke-width:3}
+:root[data-theme="dark"] .route .dot{stroke:var(--amber)}
+.route .lbl{font-weight:800;font-size:15px;fill:var(--text)}
+.plane-el{position:absolute;width:34px;height:34px;left:0;top:0;offset-path:path("M 40 110 Q 250 -10 460 110");offset-distance:6%;offset-rotate:auto;transition:offset-distance .9s cubic-bezier(.4,0,.2,1)}
+.plane-el.flying{animation:fly 2.2s ease-in-out infinite alternate}
+@keyframes fly{from{offset-distance:12%}to{offset-distance:88%}}
+.plane-el svg{width:34px;height:34px;display:block;transform:rotate(90deg)}
 
-/* departures board */
-.board{background:var(--board);border-radius:22px;padding:18px 18px 12px;color:var(--board-text);font-family:"DM Mono",ui-monospace,monospace;box-shadow:0 30px 60px -30px rgba(20,33,61,.6);overflow:hidden}
-.board-head{display:flex;justify-content:space-between;align-items:center;padding:0 6px 12px;border-bottom:1px dashed rgba(255,217,131,.3);font-size:.8rem;letter-spacing:.06em}
-.board-head .live{display:inline-flex;align-items:center;gap:8px}
-.board-head .live i{width:9px;height:9px;border-radius:50%;background:#5AE38A;box-shadow:0 0 12px #5AE38A;animation:pulse 1.6s infinite}
-@keyframes pulse{50%{opacity:.35}}
-.rows{display:grid;gap:6px;margin-top:10px;overflow-x:auto}
-.row{display:grid;grid-template-columns:2.2fr 1fr 1.05fr .9fr;gap:10px;align-items:center;padding:10px 8px;border-radius:10px;background:rgba(255,255,255,.035);min-width:520px;font-size:.92rem}
-.row .rt{color:#fff;font-weight:500;white-space:nowrap}
-.row .rt small{display:block;color:rgba(255,217,131,.7);font-size:.72rem;margin-top:2px;font-family:"Plus Jakarta Sans",sans-serif;letter-spacing:0}
-.row .price{color:#5AE38A;font-size:1.15rem}
-.flap{display:inline-block;background:#1B2A4D;border-radius:4px;padding:2px 6px;line-height:1.3;position:relative}
-.flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.55)}
-.tag{display:inline-block;font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:.7rem;padding:3px 8px;border-radius:6px;letter-spacing:.02em}
-.tag.error{background:var(--signal);color:#fff}
-.tag.flash{background:var(--amber);color:#3A2A00}
-.tag.mistake{background:#5AE38A;color:#063A24}
-.row.new{animation:flip .6s ease-out}
-@keyframes flip{0%{transform:rotateX(-90deg);opacity:0}100%{transform:rotateX(0);opacity:1}}
-.board-foot{font-size:.7rem;padding:12px 6px 4px;color:rgba(255,217,131,.6);font-family:"Plus Jakarta Sans",sans-serif}
+.progress{display:flex;gap:6px;margin:6px 0 14px}
+.progress i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.progress i.fill{background:var(--ink)}
+:root[data-theme="dark"] .progress i.fill{background:var(--amber)}
+.step{display:none}.step.on{display:block;animation:in .28s ease-out}
+@keyframes in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+.q{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;margin:0 0 4px;line-height:1.15}
+.hint{color:var(--muted);font-size:.95rem;margin:0 0 14px}
+.big{width:100%;border:2px solid var(--line);border-radius:16px;background:var(--card);min-height:62px;padding:0 18px;font-size:1.2rem;font-weight:600}
+.big:focus{border-color:var(--ink);outline:none}
+.big::placeholder{color:#9AA8C2;font-weight:500}
+.results{margin-top:8px;display:grid;gap:6px;max-height:44vh;overflow:auto}
+.results button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:14px;background:var(--card);padding:12px 14px;min-height:56px}
+.results button b{font-size:1.02rem}.results button small{display:block;color:var(--muted);font-weight:500}
+.results button code{font-family:inherit;font-weight:800;color:var(--muted);background:var(--sky);padding:4px 8px;border-radius:8px}
+.results button:hover,.results button:focus{border-color:var(--ink)}
+.options{display:grid;gap:10px}
+.options.two{grid-template-columns:1fr 1fr}
+.opt{border:2px solid var(--line);border-radius:16px;background:var(--card);padding:14px 16px;text-align:left;min-height:62px;display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.05rem}
+.opt small{display:block;color:var(--muted);font-weight:500;font-size:.88rem}
+.opt[aria-pressed="true"]{border-color:var(--ink);background:var(--sky)}
+:root[data-theme="dark"] .opt[aria-pressed="true"]{border-color:var(--amber)}
+.opt .ico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800;flex:none}
+.dates{display:none;gap:10px;margin-top:10px}.dates.open{display:grid;grid-template-columns:1fr 1fr}
+.dates input{border:2px solid var(--line);border-radius:14px;background:var(--card);min-height:56px;padding:0 12px;width:100%}
+.money{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:8px}
+.money input{font-size:2rem;font-weight:800;letter-spacing:-.03em}
+.money select{border:2px solid var(--line);border-radius:16px;background:var(--card);padding:0 14px;font-weight:700}
+input[type=range]{width:100%;accent-color:var(--signal);height:44px}
+.sub-in{display:none;margin-top:8px}.sub-in.open{display:block}
+.sub-in input{width:100%;border:2px solid var(--line);border-radius:14px;background:var(--card);min-height:56px;padding:0 14px;font-size:1.05rem}
+.wiz-foot{display:flex;gap:10px;margin-top:18px}
+.btn{border:0;border-radius:16px;min-height:60px;padding:0 22px;font-weight:800;font-size:1.08rem;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--signal);color:#fff;flex:1;box-shadow:0 5px 0 var(--signal-ink)}
+.btn-primary:active{box-shadow:0 1px 0 var(--signal-ink);transform:translateY(4px)}
+.btn-primary:disabled{opacity:.45;box-shadow:none;transform:none}
+.btn-quiet{background:var(--card);border:2px solid var(--line)}
+.summary{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:6px 16px;margin-top:8px}
+.summary div{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:1rem}
+.summary div:last-child{border:0}.summary span{color:var(--muted)}.summary b{text-align:right}
+.done{text-align:center;padding:30px 0 10px}
+.done .tick{width:96px;height:96px;border-radius:50%;background:var(--go);color:#fff;display:grid;place-items:center;margin:0 auto 18px;font-size:2.6rem;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.confetti i{position:absolute;top:-10px;width:9px;height:14px;border-radius:2px;animation:drop 1.6s ease-in forwards}
+@keyframes drop{to{transform:translateY(105vh) rotate(540deg);opacity:0}}
 
-/* sections */
-section{margin:0 0 56px}
-h2{font-size:clamp(1.5rem,2.6vw,2rem);letter-spacing:-.02em;margin:0 0 6px}
-.sub{color:var(--muted);margin:0 0 20px;font-size:1.05rem}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}
+.filters button{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:9px 15px;font-weight:700;font-size:.92rem;min-height:42px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+:root[data-theme="dark"] .filters button[aria-pressed="true"]{background:var(--amber);color:#3A2A00;border-color:var(--amber)}
+.live{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:.85rem;font-weight:700;margin-bottom:8px}
+.live i{width:8px;height:8px;border-radius:50%;background:#2ECC71;box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:ping 1.8s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 9px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+.deals{display:grid;gap:12px}
+.deal{display:block;text-decoration:none;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;animation:rise .5s both}
+.deal:nth-child(2){animation-delay:.06s}.deal:nth-child(3){animation-delay:.12s}.deal:nth-child(4){animation-delay:.18s}.deal:nth-child(5){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.deal .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.deal .price{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.deal .price small{display:block;font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:0;margin-top:3px}
+.tag{font-weight:800;font-size:.72rem;padding:5px 9px;border-radius:8px;white-space:nowrap}
+.tag.error,.tag.mistake{background:var(--signal);color:#fff}.tag.flash{background:var(--amber);color:#3A2A00}.tag.deal{background:var(--sky);color:var(--text)}
+.deal .cities{font-weight:800;font-size:1.15rem;margin:10px 0 2px;letter-spacing:-.01em}
+.deal .meta{color:var(--muted);font-size:.9rem}
+.deal .foot{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted);font-weight:600}
+.deal .foot b{color:var(--signal)}
+.empty{border:2px dashed var(--line);border-radius:20px;padding:30px 20px;text-align:center;color:var(--muted)}
+.empty .btn{margin-top:14px}
 
-/* boarding pass form */
-.pass{background:var(--card);border:2px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:0 20px 50px -30px rgba(20,33,61,.4)}
-.pass-head{background:var(--ink);color:#fff;padding:20px 26px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-[data-theme="dark"] .pass-head, :root:not([data-theme="light"]) .pass-head{ }
-.pass-head b{font-size:1.2rem;letter-spacing:-.01em}
-.pass-head span{opacity:.75;font-size:.95rem}
-.pass-body{padding:8px 26px 26px;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px}
-@media(max-width:700px){.pass-body{grid-template-columns:1fr;padding:8px 18px 22px}}
-.field{display:flex;flex-direction:column;gap:8px;padding-top:14px}
-.field.full{grid-column:1/-1}
-.field label{font-weight:700;font-size:1.02rem}
-.field .hint{color:var(--muted);font-size:.9rem;margin-top:-4px}
-.control{border:2px solid var(--line);border-radius:14px;background:var(--paper);min-height:58px;padding:0 16px;font-size:1.1rem;width:100%;transition:border-color .12s}
-.control:focus{border-color:var(--ink);outline:none;background:var(--card)}
-.control::placeholder{color:#9AA8C2}
-.airport{position:relative}
-.airport .list{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 6px);background:var(--card);border:2px solid var(--line);border-radius:14px;max-height:280px;overflow:auto;box-shadow:0 16px 40px -20px rgba(0,0,0,.4);display:none}
-.airport .list.open{display:block}
-.airport .list button{display:flex;justify-content:space-between;width:100%;text-align:left;padding:12px 16px;border:0;background:none;font-size:1rem;min-height:48px;gap:12px}
-.airport .list button:hover,.airport .list button:focus{background:var(--sky);outline:none}
-.airport .list button b{font-family:"DM Mono",monospace;font-weight:500;color:var(--muted)}
-.swap{grid-column:1/-1;display:flex;justify-content:center;margin:-8px 0 -14px}
-.swap button{background:var(--sky);border:2px solid var(--line);border-radius:999px;width:46px;height:46px;font-size:1.2rem}
-.chips{display:flex;flex-wrap:wrap;gap:10px}
-.chip{border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:12px 16px;min-height:52px;font-weight:600;font-size:1rem;display:inline-flex;align-items:center;gap:8px}
-.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}
-:root:not([data-theme="light"]) .chip[aria-pressed="true"]{ @media(prefers-color-scheme:dark){ background:var(--sky);color:var(--text);border-color:var(--amber) } }
-:root[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--sky);color:var(--text);border-color:var(--amber)}
-.dates{display:none;gap:12px;flex-wrap:wrap}
-.dates.open{display:flex}
-.dates .control{flex:1;min-width:150px}
-.money{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
-.money .control{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
-.money select{width:auto;min-width:96px}
-.range{width:100%;accent-color:var(--signal);margin-top:6px;height:44px}
-.perforation{grid-column:1/-1;border-top:3px dashed var(--line);margin:16px -26px 0;position:relative}
-.perforation::before,.perforation::after{content:"";position:absolute;top:-16px;width:30px;height:30px;border-radius:50%;background:var(--paper);border:2px solid var(--line)}
-.perforation::before{left:-17px;border-left-color:transparent}.perforation::after{right:-17px;border-right-color:transparent}
-
-/* channels */
-.channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.ch{border:2px solid var(--line);border-radius:16px;padding:14px;background:var(--paper);text-align:left;display:flex;flex-direction:column;gap:6px;min-height:100px;position:relative}
-.ch .ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:1.2rem;color:#fff;font-weight:800}
-.ch b{font-size:1.05rem}
-.ch small{color:var(--muted)}
-.ch[aria-pressed="true"]{border-color:var(--go);background:var(--go-soft)}
-.ch[aria-pressed="true"]::after{content:"✓";position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:50%;background:var(--go);color:#fff;display:grid;place-items:center;font-weight:800;font-size:.9rem}
-.ch-inputs{display:grid;gap:12px;margin-top:6px}
-.ch-inputs .in{display:none;gap:8px;flex-direction:column}
-.ch-inputs .in.open{display:flex}
-.ch-inputs label{font-weight:700}
-.pass-foot{grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:8px}
-.matches{font-weight:700;color:var(--go)}
-.matches.none{color:var(--muted)}
-
-/* alerts list */
-.alerts{display:grid;gap:12px}
-.alert{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
-@media(max-width:600px){.alert{grid-template-columns:1fr}}
-.alert .route{font-weight:800;font-size:1.2rem;letter-spacing:-.01em}
-.alert .meta{color:var(--muted);font-size:.95rem;margin-top:2px}
-.alert .meta em{font-style:normal;color:var(--text);font-weight:600}
-.alert .via{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.alert .via span{background:var(--sky);border-radius:8px;padding:3px 9px;font-size:.85rem;font-weight:600}
+.alert{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
 .alert.paused{opacity:.55}
-.alert .acts{display:flex;gap:8px}
-.alert .acts button{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 14px;font-weight:700;min-height:44px}
-.empty{border:2px dashed var(--line);border-radius:18px;padding:28px;text-align:center;color:var(--muted)}
+.alert .cities{font-weight:800;font-size:1.15rem}
+.alert .meta{color:var(--muted);font-size:.92rem;margin:4px 0 10px}
+.alert .meta em{font-style:normal;color:var(--text);font-weight:700}
+.alert .via{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.alert .via span{background:var(--sky);border-radius:8px;padding:3px 9px;font-size:.82rem;font-weight:700}
+.alert .acts{display:flex;gap:8px}.alert .acts button{flex:1;border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:10px;font-weight:700;min-height:46px}
 
-/* deal cards (matches) */
-.deals{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.deal{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px}
-.deal .dprice{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1}
-.deal .dprice small{font-size:.9rem;font-weight:600;color:var(--muted);margin-left:6px;text-decoration:line-through}
-.deal .droute{font-weight:700;font-size:1.05rem}
-.deal .dmeta{color:var(--muted);font-size:.92rem}
-.deal .dsrc{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:8px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
-.deal .dsrc a{color:var(--text);font-weight:700;text-decoration:none}
-.deal .book{margin-top:6px;background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px;font-weight:800;min-height:48px}
-:root[data-theme="dark"] .deal .book{background:var(--amber);color:#3A2A00}
-
-/* phone previews */
-.preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
-.phone{background:#0D1B2A;border-radius:28px;padding:14px;border:6px solid #1E2D40;max-width:340px;margin:0 auto;width:100%}
-.phone .app{font-size:.8rem;color:#9FB3C8;text-align:center;padding-bottom:8px}
-.bubble{background:#DCF8C6;color:#0B1F0A;border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:.92rem;line-height:1.45;white-space:pre-line}
-.bubble.tg{background:#EFFDDE}
-.bubble.mail{background:#fff;color:#1a1a1a;border-radius:10px}
-.bubble.push{background:#22324a;color:#fff;border-radius:16px;font-size:.88rem}
-.bubble time{display:block;text-align:right;font-size:.72rem;opacity:.6;margin-top:6px}
-
-/* toast + modal */
-.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:14px 22px;border-radius:14px;font-weight:700;box-shadow:0 20px 40px -20px rgba(0,0,0,.6);transition:transform .25s;z-index:50;max-width:90vw}
+.toast{position:fixed;left:50%;bottom:104px;transform:translate(-50%,140px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:14px;font-weight:700;max-width:88vw;z-index:50;transition:transform .25s;text-align:center}
 .toast.show{transform:translate(-50%,0)}
 :root[data-theme="dark"] .toast{background:var(--amber);color:#3A2A00}
-footer{color:var(--muted);font-size:.9rem;padding:20px 0 40px;border-top:1px solid var(--line)}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.in-telegram nav.tabs .bar{grid-template-columns:1fr 1.3fr}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="app">
   <header class="top">
-    <div class="brand"><span class="plane" aria-hidden="true">✈</span> FareWatch</div>
-    <div class="tools">
-      <button id="fsBtn" aria-pressed="false" title="Larger text">Aa Bigger text</button>
-      <button id="themeBtn" title="Switch light or dark">◐</button>
-    </div>
+    <div class="brand"><i>✈</i>FareWatch</div>
+    <div class="tools"><button id="fsBtn" aria-pressed="false">Aa</button><button id="themeBtn" aria-label="Light or dark">◐</button></div>
   </header>
 
-  <div class="hero">
-    <div>
-      <h1>Tell us where you want to go. We'll message you when it's cheap.</h1>
-      <p class="lede">Error fares, flash sales and mistake prices are gone in hours. FareWatch reads the deal forums around the clock so you don't have to.</p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="#build">Set up my first alert</a>
-        <a class="btn btn-quiet" href="#board">See today's deals</a>
+  <main>
+    <section class="screen" id="s-deals">
+      <h1>Cheap flights, spotted today</h1>
+      <p class="lede">Error fares and flash sales pulled from the deal forums. Tap one to open it.</p>
+      <div class="live"><i></i><span id="liveTxt">Watching the forums</span></div>
+      <div class="filters" id="filters">
+        <button aria-pressed="true" data-f="all">All</button>
+        <button aria-pressed="false" data-f="mine">From my city</button>
+        <button aria-pressed="false" data-f="error">Error fares</button>
+        <button aria-pressed="false" data-f="business">Business &amp; first</button>
       </div>
-      <div class="sources">We watch: <span>FlyerTalk</span><span>Secret Flying</span><span>BusinessClassDeals</span><span>r/flightdeals</span><span>YYZ Deals</span><span>Airline sales</span></div>
-    </div>
+      <div class="deals" id="deals"></div>
+    </section>
 
-    <div class="board" id="board" aria-label="Live deal board">
-      <div class="board-head"><span>DEALS SPOTTED</span><span class="live"><i></i>LIVE</span></div>
-      <div class="rows" id="rows"></div>
-      <div class="board-foot" id="boardFoot">Sample feed. Prices shown as found, round trip unless noted.</div>
-    </div>
-  </div>
+    <section class="screen on" id="s-new">
+      <div class="route" id="route">
+        <svg viewBox="0 0 500 150" aria-hidden="true">
+          <path class="arc" d="M 40 110 Q 250 -10 460 110"/>
+          <path class="arc live" id="arcLive" d="M 40 110 Q 250 -10 460 110" pathLength="1" style="stroke-dashoffset:1"/>
+          <circle class="dot" cx="40" cy="110" r="9"/><circle class="dot" cx="460" cy="110" r="9"/>
+          <text class="lbl" x="28" y="140" text-anchor="start" id="lblFrom">From</text>
+          <text class="lbl" x="472" y="140" text-anchor="end" id="lblTo">To</text>
+        </svg>
+        <div class="plane-el" id="plane"><svg viewBox="0 0 24 24" fill="var(--signal)"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>
+      </div>
+      <div class="progress" id="progress"></div>
 
-  <section id="build">
-    <h2>Build your alert</h2>
-    <p class="sub">Fill in what you know. Leave the rest blank and we'll cast a wider net.</p>
-    <form class="pass" id="form" novalidate>
-      <div class="pass-head"><b>Boarding pass for your next deal</b><span>Takes about a minute</span></div>
-      <div class="pass-body">
-        <div class="field airport">
-          <label for="from">Flying from</label>
-          <input class="control" id="from" placeholder="City or airport, e.g. Toronto" autocomplete="off" required>
-          <div class="list" id="fromList"></div>
+      <div class="step on" data-step="0">
+        <p class="q">Where are you flying from?</p>
+        <p class="hint">Type a city or airport, like Lahore or LHE.</p>
+        <input class="big" id="fromIn" placeholder="City or airport" autocomplete="off" inputmode="search">
+        <div class="results" id="fromRes"></div>
+      </div>
+
+      <div class="step" data-step="1">
+        <p class="q">Where do you want to go?</p>
+        <p class="hint">Pick a place, or leave it empty for anywhere cheap.</p>
+        <input class="big" id="toIn" placeholder="City, airport, or leave empty" autocomplete="off" inputmode="search">
+        <div class="results" id="toRes"></div>
+      </div>
+
+      <div class="step" data-step="2">
+        <p class="q">When would you like to travel?</p>
+        <p class="hint">Rough is fine. Deals decide the exact dates.</p>
+        <div class="options" id="whenOpts">
+          <button type="button" class="opt" data-v="any" aria-pressed="true">Any time <small>Widest net, most deals</small></button>
+          <button type="button" class="opt" data-v="3m" aria-pressed="false">Next 3 months</button>
+          <button type="button" class="opt" data-v="winter" aria-pressed="false">This winter</button>
+          <button type="button" class="opt" data-v="summer" aria-pressed="false">Next summer</button>
+          <button type="button" class="opt" data-v="pick" aria-pressed="false">Pick exact dates</button>
         </div>
-        <div class="field airport">
-          <label for="to">Going to</label>
-          <input class="control" id="to" placeholder="Anywhere, or pick a city" autocomplete="off">
-          <div class="list" id="toList"></div>
-        </div>
-        <div class="swap"><button type="button" id="swap" title="Swap from and to" aria-label="Swap from and to">⇅</button></div>
+        <div class="dates" id="dates"><input type="date" id="d1" aria-label="Leaving"><input type="date" id="d2" aria-label="Returning"></div>
+      </div>
 
-        <div class="field full">
-          <label>When do you want to fly?</label>
-          <div class="chips" id="when">
-            <button type="button" class="chip" data-when="any" aria-pressed="true">Any time</button>
-            <button type="button" class="chip" data-when="3m" aria-pressed="false">Next 3 months</button>
-            <button type="button" class="chip" data-when="winter" aria-pressed="false">This winter</button>
-            <button type="button" class="chip" data-when="summer" aria-pressed="false">Next summer</button>
-            <button type="button" class="chip" data-when="pick" aria-pressed="false">Pick dates</button>
-          </div>
-          <div class="dates" id="dates">
-            <input class="control" type="date" id="d1" aria-label="Earliest departure">
-            <input class="control" type="date" id="d2" aria-label="Latest return">
-          </div>
+      <div class="step" data-step="3">
+        <p class="q">How do you like to fly?</p>
+        <p class="hint">Skip this and I'll include everything.</p>
+        <div class="options two" id="cabinOpts">
+          <button type="button" class="opt" data-v="any" aria-pressed="true">Any seat</button>
+          <button type="button" class="opt" data-v="economy" aria-pressed="false">Economy</button>
+          <button type="button" class="opt" data-v="premium" aria-pressed="false">Premium</button>
+          <button type="button" class="opt" data-v="business" aria-pressed="false">Business</button>
         </div>
-
-        <div class="field">
-          <label>Seat class</label>
-          <div class="chips" id="cabin">
-            <button type="button" class="chip" data-cabin="any" aria-pressed="true">Any</button>
-            <button type="button" class="chip" data-cabin="economy" aria-pressed="false">Economy</button>
-            <button type="button" class="chip" data-cabin="premium" aria-pressed="false">Premium</button>
-            <button type="button" class="chip" data-cabin="business" aria-pressed="false">Business</button>
-            <button type="button" class="chip" data-cabin="first" aria-pressed="false">First</button>
-          </div>
+        <p class="hint" style="margin:16px 0 8px">Stops</p>
+        <div class="options two" id="stopOpts">
+          <button type="button" class="opt" data-v="ANY" aria-pressed="true">Any</button>
+          <button type="button" class="opt" data-v="0" aria-pressed="false">Nonstop only</button>
         </div>
+        <p class="hint" style="margin:16px 0 8px">Airline</p>
+        <select class="big" id="airline">
+          <option value="">Any airline</option>
+          <option data-code="AC">Air Canada</option><option data-code="WS">WestJet</option><option data-code="TS">Air Transat</option><option data-code="PD">Porter</option>
+          <option data-code="PK">PIA</option><option data-code="MH">Malaysia Airlines</option><option data-code="AK">AirAsia</option>
+          <option data-code="UA">United</option><option data-code="DL">Delta</option><option data-code="AA">American</option>
+          <option data-code="BA">British Airways</option><option data-code="LH">Lufthansa</option><option data-code="AF">Air France</option><option data-code="KL">KLM</option>
+          <option data-code="EK">Emirates</option><option data-code="QR">Qatar Airways</option><option data-code="EY">Etihad</option><option data-code="TK">Turkish Airlines</option><option data-code="SV">Saudia</option>
+          <option data-code="CX">Cathay Pacific</option><option data-code="SQ">Singapore Airlines</option><option data-code="JL">Japan Airlines</option><option data-code="NH">ANA</option><option data-code="AI">Air India</option>
+        </select>
+      </div>
 
-        <div class="field">
-          <label>Stops</label>
-          <div class="chips" id="stops">
-            <button type="button" class="chip" data-stops="ANY" aria-pressed="true">Any</button>
-            <button type="button" class="chip" data-stops="0" aria-pressed="false">Nonstop only</button>
-            <button type="button" class="chip" data-stops="1" aria-pressed="false">1 stop max</button>
-          </div>
+      <div class="step" data-step="4">
+        <p class="q">Tell me when it's under…</p>
+        <p class="hint" id="priceHint">Round trip, per person.</p>
+        <div class="money"><input class="big" type="number" id="price" value="600" min="50" step="10" inputmode="numeric"><select id="cur"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option><option>PKR</option></select></div>
+        <input type="range" id="priceRange" min="100" max="5000" step="25" value="600" aria-label="Price">
+      </div>
+
+      <div class="step" data-step="5">
+        <p class="q">How should I reach you?</p>
+        <p class="hint">Pick one or more.</p>
+        <div class="options" id="chOpts">
+          <button type="button" class="opt" data-v="whatsapp" aria-pressed="false"><span class="ico" style="background:#25D366">W</span><span>WhatsApp<small>Like a text from a friend</small></span></button>
+          <button type="button" class="opt" data-v="telegram" aria-pressed="false"><span class="ico" style="background:#2AABEE">T</span><span>Telegram</span></button>
+          <button type="button" class="opt" data-v="push" aria-pressed="false"><span class="ico" style="background:#7C5CFF">🔔</span><span>Pop-up on this device</span></button>
+          <button type="button" class="opt" data-v="email" aria-pressed="false"><span class="ico" style="background:#FF6B35">@</span><span>Email</span></button>
+          <button type="button" class="opt" data-v="sms" aria-pressed="false"><span class="ico" style="background:#14213D;font-size:.7rem">SMS</span><span>Text message</span></button>
         </div>
-        <div class="field">
-          <label for="airline">Airline</label>
-          <select class="control" id="airline">
-            <option value="">Any airline</option>
-            <option value="Air Canada" data-code="AC">Air Canada</option><option value="WestJet" data-code="WS">WestJet</option><option value="Porter" data-code="PD">Porter</option><option value="Air Transat" data-code="TS">Air Transat</option>
-            <option value="United" data-code="UA">United</option><option value="Delta" data-code="DL">Delta</option><option value="American" data-code="AA">American</option><option value="British Airways" data-code="BA">British Airways</option>
-            <option value="Lufthansa" data-code="LH">Lufthansa</option><option value="Air France" data-code="AF">Air France</option><option value="KLM" data-code="KL">KLM</option><option value="Emirates" data-code="EK">Emirates</option>
-            <option value="Qatar Airways" data-code="QR">Qatar Airways</option><option value="Turkish Airlines" data-code="TK">Turkish Airlines</option><option value="Cathay Pacific" data-code="CX">Cathay Pacific</option>
-            <option value="Japan Airlines" data-code="JL">Japan Airlines</option><option value="ANA" data-code="NH">ANA</option><option value="Singapore Airlines" data-code="SQ">Singapore Airlines</option><option value="Aer Lingus" data-code="EI">Aer Lingus</option>
-          </select>
-        </div>
+        <div class="sub-in" id="in-whatsapp"><input id="wa" type="tel" placeholder="WhatsApp number, e.g. +1 416 555 0123"></div>
+        <div class="sub-in" id="in-telegram"><input id="tgu" placeholder="Telegram username, e.g. @yourname"></div>
+        <div class="sub-in" id="in-email"><input id="em" type="email" placeholder="Your email"></div>
+        <div class="sub-in" id="in-sms"><input id="sms" type="tel" placeholder="Mobile number"></div>
+        <div class="sub-in" id="in-push"><p class="hint">Tap Next and your device will ask permission.</p></div>
+      </div>
 
-        <div class="field full">
-          <label for="price">Message me when the price drops below</label>
-          <div class="money">
-            <input class="control" type="number" id="price" value="500" min="50" step="10" inputmode="numeric">
-            <select class="control" id="cur"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option></select>
-          </div>
-          <input class="range" type="range" id="priceRange" min="100" max="4000" step="25" value="500" aria-label="Price slider">
-          <div class="hint" id="priceHint"></div>
-        </div>
+      <div class="step" data-step="6">
+        <p class="q">Look right?</p>
+        <div class="summary" id="summary"></div>
+      </div>
 
-        <div class="perforation" aria-hidden="true"></div>
-
-        <div class="field full">
-          <label>Where should we send the alert?</label>
-          <div class="hint">Pick as many as you like. Most people choose one chat app and email as a backup.</div>
-          <div class="channels" id="channels">
-            <button type="button" class="ch" data-ch="whatsapp" aria-pressed="false"><span class="ico" style="background:#25D366">W</span><b>WhatsApp</b><small>A message from FareWatch, just like a friend texting you</small></button>
-            <button type="button" class="ch" data-ch="telegram" aria-pressed="false"><span class="ico" style="background:#2AABEE">T</span><b>Telegram</b><small>Instant, works on phone and desktop</small></button>
-            <button type="button" class="ch" data-ch="push" aria-pressed="false"><span class="ico" style="background:#7C5CFF">🔔</span><b>This device</b><small>A pop-up on this phone or computer</small></button>
-            <button type="button" class="ch" data-ch="email" aria-pressed="false"><span class="ico" style="background:#FF6B35">@</span><b>Email</b><small>Full details with a booking link</small></button>
-            <button type="button" class="ch" data-ch="sms" aria-pressed="false"><span class="ico" style="background:#14213D">SMS</span><b>Text message</b><small>Plain text, no app needed</small></button>
-          </div>
-          <div class="ch-inputs">
-            <div class="in" id="in-whatsapp"><label for="wa">Your WhatsApp number</label><input class="control" id="wa" type="tel" placeholder="+1 416 555 0123" inputmode="tel"></div>
-            <div class="in" id="in-telegram"><label for="tg">Your Telegram username</label><input class="control" id="tg" placeholder="@yourname"></div>
-            <div class="in" id="in-push"><label>Device pop-ups</label><button type="button" class="btn btn-quiet" id="pushBtn">Allow pop-ups on this device</button><div class="hint" id="pushHint"></div></div>
-            <div class="in" id="in-email"><label for="em">Your email</label><input class="control" id="em" type="email" placeholder="you@example.com" inputmode="email"></div>
-            <div class="in" id="in-sms"><label for="sms">Your mobile number</label><input class="control" id="sms" type="tel" placeholder="+1 416 555 0123" inputmode="tel"></div>
-          </div>
-        </div>
-
-        <div class="pass-foot">
-          <div class="matches none" id="matchCount">Fill in "Flying from" to see current matches</div>
-          <button type="submit" class="btn btn-primary">Save alert</button>
+      <div class="step" data-step="7">
+        <div class="done"><div class="tick">✓</div>
+          <p class="q">You're all set</p>
+          <p class="hint" id="doneTxt">I'll message you the moment a fare drops.</p>
+          <button type="button" class="btn btn-primary" id="anotherBtn" style="width:100%">Watch another route</button>
         </div>
       </div>
-    </form>
-  </section>
 
-  <section id="matchesSec" hidden>
-    <h2>Deals that match right now</h2>
-    <p class="sub">These are live on the board already. Grab them before they're pulled.</p>
-    <div class="deals" id="matchDeals"></div>
-  </section>
+      <div class="wiz-foot" id="wizFoot">
+        <button type="button" class="btn btn-quiet" id="backBtn">Back</button>
+        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+      </div>
+    </section>
 
-  <section id="mine">
-    <h2>My alerts</h2>
-    <p class="sub" id="mineSub">Nothing saved yet.</p>
-    <div class="alerts" id="alerts"></div>
-  </section>
+    <section class="screen" id="s-mine">
+      <h1>My alerts</h1>
+      <p class="lede" id="mineSub">Everything I'm watching for you.</p>
+      <div id="alerts"></div>
+    </section>
+  </main>
 
-  <section id="previewSec">
-    <h2>What an alert looks like</h2>
-    <p class="sub">Short, plain, and with one button to book. Send yourself a test to see it on your own phone.</p>
-    <div class="preview" id="preview"></div>
-    <p style="margin-top:18px"><button type="button" class="btn btn-quiet" id="testBtn">Send me a test alert</button></p>
-  </section>
-
-  <footer>FareWatch finds fares; the airline or agency handles the booking. Error fares can be cancelled by airlines, so wait for ticketing before booking hotels.</footer>
+  <nav class="tabs" aria-label="Sections"><div class="bar">
+    <button data-tab="deals" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>Deals</button>
+    <button data-tab="new" class="main" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New alert</button>
+    <button data-tab="mine" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4"/></svg>My alerts</button>
+  </div></nav>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="confetti" id="confetti"></div>
 
+<script src="airports.js"></script>
 <script>
-// ---------- data ----------
-const AIRPORTS=[
-["YYZ","Toronto","Canada"],["YUL","Montreal","Canada"],["YVR","Vancouver","Canada"],["YYC","Calgary","Canada"],["YOW","Ottawa","Canada"],["YHZ","Halifax","Canada"],
-["JFK","New York","USA"],["EWR","Newark","USA"],["BOS","Boston","USA"],["ORD","Chicago","USA"],["LAX","Los Angeles","USA"],["SFO","San Francisco","USA"],["MIA","Miami","USA"],["MCO","Orlando","USA"],["LAS","Las Vegas","USA"],["SEA","Seattle","USA"],
-["LHR","London","UK"],["DUB","Dublin","Ireland"],["CDG","Paris","France"],["AMS","Amsterdam","Netherlands"],["FRA","Frankfurt","Germany"],["FCO","Rome","Italy"],["MAD","Madrid","Spain"],["BCN","Barcelona","Spain"],["LIS","Lisbon","Portugal"],["ATH","Athens","Greece"],["IST","Istanbul","Türkiye"],
-["DXB","Dubai","UAE"],["DOH","Doha","Qatar"],["DEL","Delhi","India"],["BOM","Mumbai","India"],["AMD","Ahmedabad","India"],["HKG","Hong Kong","China"],["NRT","Tokyo","Japan"],["ICN","Seoul","South Korea"],["SIN","Singapore","Singapore"],["BKK","Bangkok","Thailand"],
-["SYD","Sydney","Australia"],["MEL","Melbourne","Australia"],["AKL","Auckland","New Zealand"],["CUN","Cancún","Mexico"],["MEX","Mexico City","Mexico"],["PUJ","Punta Cana","Dominican Republic"],["MBJ","Montego Bay","Jamaica"],["GRU","São Paulo","Brazil"],["EZE","Buenos Aires","Argentina"],["CPT","Cape Town","South Africa"]
-];
-const DEALS=[
-{from:"YYZ",to:"LIS",airline:"Air Transat",cabin:"economy",price:398,was:890,cur:"CAD",type:"error",src:"FlyerTalk",when:"Jan–Mar 2027",note:"Mistake in fuel surcharge, book direct",age:12},
-{from:"YYZ",to:"NRT",airline:"Air Canada",cabin:"business",price:2140,was:5600,cur:"CAD",type:"flash",src:"BusinessClassDeals",when:"Nov 2026–Feb 2027",note:"Flash sale, ends Tuesday",age:41},
-{from:"YUL",to:"CDG",airline:"Air France",cabin:"economy",price:441,was:820,cur:"CAD",type:"flash",src:"Secret Flying",when:"Oct–Nov 2026",note:"Nonstop, checked bag included",age:65},
-{from:"YVR",to:"SYD",airline:"Cathay Pacific",cabin:"premium",price:1290,was:2700,cur:"CAD",type:"flash",src:"r/flightdeals",when:"Feb–Apr 2027",note:"One stop in Hong Kong",age:120},
-{from:"JFK",to:"DUB",airline:"Aer Lingus",cabin:"economy",price:289,was:640,cur:"USD",type:"flash",src:"Secret Flying",when:"Oct 2026–Mar 2027",note:"Nonstop",age:140},
-{from:"YYZ",to:"DEL",airline:"Qatar Airways",cabin:"business",price:2880,was:7100,cur:"CAD",type:"mistake",src:"FlyerTalk",when:"Jan–Feb 2027",note:"Likely error fare — book now, wait to plan",age:18},
-{from:"ORD",to:"FCO",airline:"Lufthansa",cabin:"premium",price:920,was:1980,cur:"USD",type:"flash",src:"BusinessClassDeals",when:"Nov 2026–Mar 2027",note:"Via Frankfurt",age:210},
-{from:"YYZ",to:"CUN",airline:"WestJet",cabin:"economy",price:312,was:610,cur:"CAD",type:"flash",src:"YYZ Deals",when:"Dec 2026–Jan 2027",note:"Holiday dates included",age:260},
-{from:"LAX",to:"ICN",airline:"ANA",cabin:"business",price:1950,was:4800,cur:"USD",type:"mistake",src:"FlyerTalk",when:"Feb–May 2027",note:"Via Tokyo, mistake fare",age:33},
-{from:"BOS",to:"LHR",airline:"British Airways",cabin:"economy",price:346,was:700,cur:"USD",type:"flash",src:"Secret Flying",when:"Nov 2026–Feb 2027",note:"Nonstop",age:300},
-{from:"YYC",to:"AMS",airline:"KLM",cabin:"economy",price:512,was:960,cur:"CAD",type:"flash",src:"r/flightdeals",when:"Jan–Mar 2027",note:"Nonstop, bag not included",age:380},
-{from:"YYZ",to:"BCN",airline:"Air Canada",cabin:"economy",price:429,was:840,cur:"CAD",type:"error",src:"FlyerTalk",when:"Feb–Apr 2027",note:"Error fare via YUL",age:8},
-];
-const CITY=Object.fromEntries(AIRPORTS.map(a=>[a[0],a[1]]));
-const TYPE_LABEL={error:"Error fare",flash:"Flash sale",mistake:"Mistake fare"};
-const CABIN_LABEL={any:"Any class",economy:"Economy",premium:"Premium economy",business:"Business",first:"First"};
-const CH_LABEL={whatsapp:"WhatsApp",telegram:"Telegram",push:"This device",email:"Email",sms:"Text"};
-const CODE_NAME=Object.fromEntries([...document.querySelectorAll("#airline option[data-code]")].map(o=>[o.dataset.code,o.value]));
-const fmt=(n,c)=>new Intl.NumberFormat("en-CA",{style:"currency",currency:c,maximumFractionDigits:0}).format(n);
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const COUNTRY=(()=>{try{const d=new Intl.DisplayNames(["en"],{type:"region"});return c=>d.of(c)}catch{return c=>c}})();
+const CITY={};AIRPORTS.forEach(a=>CITY[a[0]]=a[1]);
+const CABIN={any:"Any seat",economy:"Economy",premium:"Premium economy",business:"Business",first:"First"};
+const CH={whatsapp:"WhatsApp",telegram:"Telegram",push:"This device",email:"Email",sms:"Text"};
+const RATE={CAD:1,USD:1.36,EUR:1.48,GBP:1.72,PKR:0.0049};
+const fmt=(n,c)=>{try{return new Intl.NumberFormat("en-CA",{style:"currency",currency:c,maximumFractionDigits:0}).format(n)}catch{return c+" "+Math.round(n)}};
+const toCAD=(n,c)=>n*(RATE[c]||1.36);
 const ago=m=>m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} d ago`;
-const $=s=>document.querySelector(s);
+const CODE_NAME=Object.fromEntries($$("#airline option[data-code]").map(o=>[o.dataset.code,o.textContent]));
 
-// ---------- board ----------
-function renderBoard(){
-  const rows=$("#rows");rows.innerHTML="";
-  [...DEALS].filter(d=>d.from&&d.to&&d.price).sort((a,b)=>a.age-b.age).slice(0,8).forEach((d,i)=>{
-    const r=document.createElement("div");r.className="row"+(i===0?" new":"");
-    r.innerHTML=`<div class="rt"><span class="flap">${d.from}</span> → <span class="flap">${d.to}</span><small>${CITY[d.from]} to ${CITY[d.to]} · ${d.airline}</small></div>
-      <div>${CABIN_LABEL[d.cabin].split(" ")[0]}</div>
-      <div><span class="tag ${d.type}">${TYPE_LABEL[d.type]}</span></div>
-      <div class="price">${fmt(d.price,d.cur)}</div>`;
-    rows.appendChild(r);
-  });
-}
-renderBoard();
-setInterval(()=>{ // ticking clock so the board feels alive
-  DEALS.forEach(d=>d.age++);
-  document.querySelectorAll("#matchDeals .dmeta time").forEach(t=>t.textContent=ago(+t.dataset.age+1));
-},60000);
+const tg=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initData?window.Telegram.WebApp:null;
+const buzz=s=>{try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred(s)}catch{}};
 
-// ---------- text size + theme ----------
-const root=document.documentElement;
-let big=false;
-try{big=localStorage.getItem("fw-big")==="1";if(localStorage.getItem("fw-theme"))root.dataset.theme=localStorage.getItem("fw-theme")}catch{}
-function applyFs(){root.style.setProperty("--fs",big?"1.22":"1");$("#fsBtn").setAttribute("aria-pressed",big)}
-applyFs();
-$("#fsBtn").onclick=()=>{big=!big;applyFs();try{localStorage.setItem("fw-big",big?"1":"0")}catch{}};
-$("#themeBtn").onclick=()=>{
-  const dark=root.dataset.theme==="dark"||(!root.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);
-  root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("fw-theme",root.dataset.theme)}catch{}
-};
-
-// ---------- airport pickers ----------
-const state={from:"",to:"",when:"any",cabin:"any",stops:"ANY",channels:new Set()};
-function wireAirport(inputId,listId,key){
-  const input=$(inputId),list=$(listId);
-  function show(q){
-    q=q.trim().toLowerCase();
-    let hits=AIRPORTS.filter(a=>!q||a[0].toLowerCase().startsWith(q)||a[1].toLowerCase().includes(q)||a[2].toLowerCase().includes(q)).slice(0,8);
-    list.innerHTML="";
-    if(key==="to"&&!q){const b=document.createElement("button");b.type="button";b.innerHTML=`<span>Anywhere — surprise me</span><b>ANY</b>`;b.onclick=()=>{state.to="";input.value="Anywhere";close();update()};list.appendChild(b)}
-    hits.forEach(a=>{const b=document.createElement("button");b.type="button";b.innerHTML=`<span>${a[1]}, ${a[2]}</span><b>${a[0]}</b>`;b.onclick=()=>{state[key]=a[0];input.value=`${a[1]} (${a[0]})`;close();update()};list.appendChild(b)});
-    if(hits.length||key==="to")list.classList.add("open");else close();
-  }
-  function close(){list.classList.remove("open")}
-  input.addEventListener("focus",()=>show(input.value.includes("(")?"":input.value));
-  input.addEventListener("input",()=>{state[key]="";show(input.value)});
-  input.addEventListener("keydown",e=>{if(e.key==="Escape")close();if(e.key==="ArrowDown"){const f=list.querySelector("button");if(f){e.preventDefault();f.focus()}}});
-  list.addEventListener("keydown",e=>{const bs=[...list.querySelectorAll("button")],i=bs.indexOf(document.activeElement);if(e.key==="ArrowDown"&&bs[i+1]){e.preventDefault();bs[i+1].focus()}if(e.key==="ArrowUp"){e.preventDefault();(bs[i-1]||input).focus()}if(e.key==="Escape"){close();input.focus()}});
-  document.addEventListener("click",e=>{if(!input.parentElement.contains(e.target))close()});
-}
-wireAirport("#from","#fromList","from");wireAirport("#to","#toList","to");
-$("#swap").onclick=()=>{[state.from,state.to]=[state.to,state.from];const a=$("#from").value,b=$("#to").value;$("#from").value=b==="Anywhere"?"":b;$("#to").value=a;update()};
-
-// ---------- chips ----------
-function chips(groupSel,attr,key,after){
-  $(groupSel).addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
-    $(groupSel).querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b));state[key]=b.dataset[attr];after&&after();update()});
-}
-chips("#when","when","when",()=>$("#dates").classList.toggle("open",state.when==="pick"));
-chips("#cabin","cabin","cabin");
-chips("#stops","stops","stops");
-$("#airline").onchange=update;
-
-// ---------- price ----------
-const price=$("#price"),range=$("#priceRange");
-function priceHint(){const v=+price.value,c=$("#cur").value;
-  $("#priceHint").textContent=state.cabin==="business"||state.cabin==="first"?`Tip: business-class deals to Europe or Asia usually land between ${fmt(1800,c)} and ${fmt(3000,c)}.`:
-  v<300?`Under ${fmt(v,c)} is rare for long-haul, but common for the Caribbean, the US and Europe error fares.`:`We'll only message you at or below ${fmt(v,c)} round trip.`}
-price.oninput=()=>{range.value=Math.min(4000,price.value);priceHint();update()};
-range.oninput=()=>{price.value=range.value;priceHint();update()};
-$("#cur").onchange=()=>{priceHint();update()};
-priceHint();
-
-// ---------- channels ----------
-$("#channels").addEventListener("click",e=>{const b=e.target.closest(".ch");if(!b)return;const ch=b.dataset.ch;
-  const on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);on?state.channels.add(ch):state.channels.delete(ch);
-  $("#in-"+ch).classList.toggle("open",on);
-  if(on){const f=$("#in-"+ch).querySelector("input");f&&setTimeout(()=>f.focus(),50)}
-});
-$("#pushBtn").onclick=async()=>{
-  if(!("Notification"in window)){$("#pushHint").textContent="This browser can't show pop-ups. Choose another option too.";return}
-  const p=await Notification.requestPermission();
-  $("#pushHint").textContent=p==="granted"?"Pop-ups are on for this device.":"Pop-ups were blocked. You can change that in your browser settings.";
-  if(p==="granted"){try{pushSubscription=await subscribePush()}catch(e){console.warn(e)}try{new Notification("FareWatch is ready",{body:"We'll pop up here when a fare drops."})}catch{}}
-};
-
-// ---------- matching ----------
-const currentAlert=()=>({from:state.from,to:state.to,when:state.when,d1:$("#d1").value,d2:$("#d2").value,cabin:state.cabin,stops:state.stops,airline:$("#airline").value,price:+price.value,cur:$("#cur").value,channels:[...state.channels],contact:{whatsapp:$("#wa").value,telegram:$("#tg").value,email:$("#em").value,sms:$("#sms").value}});
-const RATE={CAD:1,USD:1.36,EUR:1.48,GBP:1.72};
-const toCAD=(n,c)=>n*RATE[c];
-function matches(a){return DEALS.filter(d=>(!a.from||d.from===a.from)&&(!a.to||d.to===a.to)&&(a.cabin==="any"||d.cabin===a.cabin)&&(!a.airline||d.airline===a.airline)&&toCAD(d.price,d.cur)<=toCAD(a.price,a.cur))}
-function dealCard(d){return `<div class="deal"><span class="tag ${d.type}" style="align-self:flex-start">${TYPE_LABEL[d.type]}</span>
-  <div class="dprice">${fmt(d.price,d.cur)}${d.was?`<small>${fmt(d.was,d.cur)}</small>`:""}</div>
-  <div class="droute">${CITY[d.from]} → ${CITY[d.to]}</div>
-  <div class="dmeta">${d.url?"":d.airline+" · "}${CABIN_LABEL[d.cabin]||""}${d.when?" · "+d.when:""}<br>${d.note} · spotted <time data-age="${d.age}">${ago(d.age)}</time></div>
-  <div class="dsrc"><span>Found on <a href="#board">${d.src}</a></span><span>${d.from}–${d.to}</span></div>
-  ${d.url?`<a class="book" style="text-align:center;text-decoration:none;display:block" href="${d.url}" target="_blank" rel="noopener">Open the deal</a>`:`<button type="button" class="book" data-book="${d.from}-${d.to}">How do I book this?</button>`}</div>`}
-function update(){
-  const a=currentAlert(),mc=$("#matchCount"),sec=$("#matchesSec");
-  if(!a.from){mc.textContent='Fill in "Flying from" to see current matches';mc.className="matches none";sec.hidden=true;return}
-  const m=matches(a);
-  mc.textContent=m.length?`${m.length} deal${m.length>1?"s":""} on the board already match this`:"No matches right now — we'll keep watching";
-  mc.className="matches"+(m.length?"":" none");
-  sec.hidden=!m.length;$("#matchDeals").innerHTML=m.map(dealCard).join("");
-}
-document.addEventListener("click",e=>{const b=e.target.closest("[data-book]");if(!b)return;
-  toast("Go to the airline's website, search these dates, and pay with a card. We'll email step-by-step help if you saved an email.")});
-
-// ---------- API client (falls back to this-device-only sample mode) ----------
-const API=(document.querySelector('meta[name="farewatch-api"]').content||window.FAREWATCH_API||"").replace(/\/$/,"");
-let token=null,serverChannels=null,vapidKey=null,alerts=[];
+const API=($('meta[name="farewatch-api"]').content||window.FAREWATCH_API||"").replace(/\/$/,"");
+let token=null,serverChannels=null,vapidKey=null,alerts=[],pushSubscription=null;
 try{token=localStorage.getItem("fw-token")}catch{}
 async function api(path,opts={}){
   if(!API)throw new Error("no api");
   const r=await fetch(API+path,{...opts,headers:{"Content-Type":"application/json","X-Watch-Token":token||"",...(opts.headers||{})}});
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(j.detail||r.statusText);
-  return j;
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.detail||r.statusText);return j;
 }
-const iso=d=>d.toISOString().slice(0,10);
-function representativeDates(a){
-  // The fare scanner checks one concrete departure (and return) date; presets map to a sensible date.
-  const t=new Date();const plus=n=>{const x=new Date(t);x.setDate(x.getDate()+n);return x};let d1,d2;
-  if(a.when==="pick"&&a.d1){d1=a.d1;d2=a.d2||null}
-  else if(a.when==="winter"){const y=t.getMonth()>=1?t.getFullYear()+1:t.getFullYear();d1=`${y}-01-20`;d2=`${y}-02-03`}
-  else if(a.when==="summer"){const y=t.getMonth()>=6?t.getFullYear()+1:t.getFullYear();d1=`${y}-07-05`;d2=`${y}-07-19`}
-  else if(a.when==="3m"){d1=iso(plus(45));d2=iso(plus(59))}
-  else{d1=iso(plus(30));d2=iso(plus(44))}
-  return {d1,d2};
-}
-function apiPayload(a){
-  const {d1,d2}=representativeDates(a);const sel=$("#airline").selectedOptions[0];
-  return {origin:a.from,destination:a.to||null,dep_date:d1,return_date:d2,
-    cabin_class:{any:"economy",economy:"economy",premium:"premium_economy",business:"business",first:"first"}[a.cabin],
-    airline:(sel&&sel.dataset.code)||"ALL",max_stops:a.stops||"ANY",max_price:a.price,currency:a.cur,
-    channels:a.channels,contact:{email:a.contact.email,whatsapp:a.contact.whatsapp,sms:a.contact.sms,telegram:a.contact.telegram,push:pushSubscription}};
-}
-// server row -> the shape renderAlerts expects
-function fromServer(r){
-  const cab={economy:"economy",premium_economy:"premium",business:"business",first:"first"}[r.cabin_class]||"any";
-  return {id:String(r.id),from:r.origin,to:r.destination||"",when:"pick",d1:r.departure_date,d2:r.return_date||"",cabin:cab,
-    airline:r.preferred_airline&&r.preferred_airline!=="ALL"?(CODE_NAME[r.preferred_airline]||r.preferred_airline):"",price:r.target_price,cur:"CAD",
-    channels:r.channels||[],paused:!!r.paused,lastLow:r.last_low};
-}
-async function initStore(){
-  if(API){
-    try{
-      if(!token){token=(await api("/token")).watch_token;try{localStorage.setItem("fw-token",token)}catch{}}
-      const cfg=await api("/config");serverChannels=cfg.channels||[];vapidKey=cfg.vapid_public_key||null;
-      document.querySelectorAll("#channels .ch").forEach(b=>{if(!serverChannels.includes(b.dataset.ch)){b.disabled=true;b.style.opacity=".45";b.querySelector("small").textContent="Coming soon";}});
-      const d=(await api("/deals")).deals||[];
-      if(d.length){DEALS.length=0;d.forEach(x=>DEALS.push({from:x.origin,to:x.destination,airline:x.source,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:{error:"error",mistake:"mistake",flash:"flash"}[x.deal_type]||"flash",src:x.source,when:"",note:x.title,url:x.url,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));
-        CITY_FALLBACK();renderBoard();$("#boardFoot").textContent="Live feed from public deal forums. Prices as posted; check the source before booking.";}
-      alerts=((await api("/alerts")).alerts||[]).map(fromServer);
-    }catch(e){console.warn("API unavailable, sample mode:",e.message);}
-  }
-  if(!API){try{alerts=JSON.parse(localStorage.getItem("fw-alerts")||"[]")}catch{alerts=[]}}
-  renderAlerts();
-}
-function CITY_FALLBACK(){DEALS.forEach(d=>{[d.from,d.to].forEach(c=>{if(c&&!CITY[c])CITY[c]=c})})}
-async function persist(){if(!API){try{localStorage.setItem("fw-alerts",JSON.stringify(alerts))}catch{}}}
-// device pop-ups via Web Push (free, needs the service worker in sw.js)
-let pushSubscription=null;
 async function subscribePush(){
   if(!("serviceWorker"in navigator)||!("PushManager"in window)||!vapidKey)return null;
   const reg=await navigator.serviceWorker.register("sw.js");
   const key=Uint8Array.from(atob(vapidKey.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(vapidKey.length/4)*4,"=")),c=>c.charCodeAt(0));
-  const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
-  return sub.toJSON();
+  return (await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key})).toJSON();
 }
-initStore();
 
-// ---------- save ----------
-$("#form").addEventListener("submit",async e=>{
-  e.preventDefault();const a=currentAlert();
-  if(!a.from){toast('Tell us where you\'re flying from first.');$("#from").focus();return}
-  if(!a.channels.length){toast("Pick at least one way to reach you.");$("#channels").scrollIntoView({behavior:"smooth",block:"center"});return}
-  const missing=a.channels.find(c=>c!=="push"&&!a.contact[c]);
-  if(missing){toast(`Add your ${CH_LABEL[missing]} details so we can reach you.`);$("#in-"+missing+" input").focus();return}
-  if(API&&serverChannels){
-    try{
-      if(a.channels.includes("push")&&!pushSubscription)pushSubscription=await subscribePush();
-      const r=await api("/alerts",{method:"POST",body:JSON.stringify(apiPayload(a))});
-      alerts.unshift(fromServer(r.alert));
-    }catch(err){toast("Couldn't save: "+err.message);return}
-  }else{
-    a.id=Date.now().toString(36);a.paused=false;a.created=new Date().toISOString();alerts.unshift(a);await persist();
+const S={from:null,to:null,when:"any",cabin:"any",stops:"ANY",channels:new Set(),step:0};
+const STEPS=8;
+
+const root=document.documentElement;let big=false;
+try{big=localStorage.getItem("fw-big")==="1";if(localStorage.getItem("fw-theme"))root.dataset.theme=localStorage.getItem("fw-theme")}catch{}
+const applyFs=()=>{root.style.setProperty("--fs",big?"1.2":"1");$("#fsBtn").setAttribute("aria-pressed",big)};applyFs();
+$("#fsBtn").onclick=()=>{big=!big;applyFs();try{localStorage.setItem("fw-big",big?"1":"0")}catch{}};
+$("#themeBtn").onclick=()=>{const dark=root.dataset.theme==="dark"||(!root.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("fw-theme",root.dataset.theme)}catch{}};
+
+function showTab(t){$$(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+t));$$("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));window.scrollTo({top:0});if(t==="deals")renderDeals();if(t==="mine")renderAlerts()}
+$$("nav.tabs button").forEach(b=>b.onclick=()=>{buzz("light");showTab(b.dataset.tab)});
+
+function updateRoute(){
+  const f=S.from,t=S.to;
+  $("#lblFrom").textContent=f?f[1]:"From";$("#lblTo").textContent=t?t[1]:(f&&S.step>1?"Anywhere":"To");
+  const arc=$("#arcLive"),plane=$("#plane");
+  if(f&&(t||S.step>1)){arc.style.strokeDashoffset="0";plane.classList.add("flying")}
+  else if(f){arc.style.strokeDashoffset=".55";plane.classList.remove("flying");plane.style.offsetDistance="40%"}
+  else{arc.style.strokeDashoffset="1";plane.classList.remove("flying");plane.style.offsetDistance="6%"}
+}
+
+function search(q){
+  q=q.trim().toLowerCase();if(!q)return[];
+  const tiers=[[],[],[],[]];
+  for(const a of AIRPORTS){
+    const code=a[0].toLowerCase(),city=a[1].toLowerCase(),name=a[2].toLowerCase();
+    let t=-1;
+    if(code===q)t=0;
+    else if(city===q||city.startsWith(q+" ")||name===q||name.startsWith(q+" "))t=1;
+    else if(city.startsWith(q)||name.startsWith(q))t=2;
+    else if(q.length>2&&(city.includes(q)||name.includes(q)))t=3;
+    if(t>=0)tiers[t].push(a);
   }
-  renderAlerts();
-  const m=matches(a).length;
-  toast(m?`Alert saved. ${m} matching deal${m>1?"s are":" is"} live now — scroll up to see.`:"Alert saved. We'll message you the moment something drops.");
-  $("#mine").scrollIntoView({behavior:"smooth"});
-});
+  const rank=l=>l.sort((x,y)=>y[4]-x[4]);
+  const out=[...tiers[0],...rank(tiers[1]),...rank(tiers[2])];
+  if(out.length<5&&!tiers[0].length)out.push(...rank(tiers[3]));
+  return out.slice(0,7);
+}
+function wireAirport(inId,resId,key){
+  const input=$(inId),res=$(resId);
+  input.addEventListener("input",()=>{
+    S[key]=null;const hits=search(input.value);
+    res.innerHTML=hits.map(a=>`<button type="button" data-code="${a[0]}"><span><b>${a[1]}</b><small>${a[2]!==a[1]&&!a[2].startsWith(a[1])?a[2]+" · ":""}${COUNTRY(a[3])}</small></span><code>${a[0]}</code></button>`).join("")||(input.value.length>1?`<div class="hint">No airport found. Try the city name or its 3-letter code.</div>`:"");
+    updateRoute();$("#nextBtn").disabled=key==="from";
+  });
+  res.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const a=AIRPORTS.find(x=>x[0]===b.dataset.code);S[key]=a;input.value=`${a[1]} (${a[0]})`;res.innerHTML="";buzz("medium");updateRoute();$("#nextBtn").disabled=false;setTimeout(next,220)});
+}
+wireAirport("#fromIn","#fromRes","from");wireAirport("#toIn","#toRes","to");
+
+function group(sel,key,multi){
+  $(sel).addEventListener("click",e=>{const b=e.target.closest(".opt");if(!b||b.disabled)return;buzz("light");
+    if(multi){const on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);on?S[key].add(b.dataset.v):S[key].delete(b.dataset.v);const sub=$("#in-"+b.dataset.v);if(sub){sub.classList.toggle("open",on);if(on){const i=sub.querySelector("input");i&&setTimeout(()=>i.focus(),60)}}}
+    else{$(sel).querySelectorAll(".opt").forEach(o=>o.setAttribute("aria-pressed",o===b));S[key]=b.dataset.v;if(key==="when")$("#dates").classList.toggle("open",b.dataset.v==="pick");if(key==="cabin"){priceHint();$("#nextBtn").textContent=S.cabin==="any"&&S.stops==="ANY"?"Skip":"Next"}}
+  });
+}
+group("#whenOpts","when");group("#cabinOpts","cabin");group("#stopOpts","stops");group("#chOpts","channels",true);
+const price=$("#price"),range=$("#priceRange");
+function priceHint(){const c=$("#cur").value,r=RATE[c]||1;$("#priceHint").textContent=S.cabin==="business"?`Business class to Europe or Asia usually goes on sale around ${fmt(2000/r,c)}–${fmt(3000/r,c)}.`:"Round trip, per person."}
+price.oninput=()=>{range.value=Math.min(5000,price.value)};range.oninput=()=>{price.value=range.value};$("#cur").onchange=priceHint;
+
+function renderProgress(){$("#progress").innerHTML=Array.from({length:STEPS-1},(_,i)=>`<i class="${i<S.step?"fill":""}"></i>`).join("")}
+function go(n){
+  S.step=Math.max(0,Math.min(STEPS-1,n));
+  $$(".step").forEach(s=>s.classList.toggle("on",+s.dataset.step===S.step));
+  renderProgress();updateRoute();
+  const last=S.step===STEPS-1;
+  $("#wizFoot").style.display=last?"none":"flex";$("#progress").style.visibility=last?"hidden":"visible";
+  $("#backBtn").style.visibility=S.step===0?"hidden":"visible";
+  $("#nextBtn").textContent=S.step===6?"Save alert":(S.step===3&&S.cabin==="any"&&S.stops==="ANY"?"Skip":"Next");
+  $("#nextBtn").disabled=S.step===0&&!S.from;
+  if(S.step===6)renderSummary();
+  const focus={0:"#fromIn",1:"#toIn"}[S.step];if(focus)setTimeout(()=>$(focus).focus(),150);
+  window.scrollTo({top:0});
+}
+async function next(){
+  if(S.step===0&&!S.from){toast("Pick an airport from the list first.");return}
+  if(S.step===5){
+    if(tg){S.channels.clear();S.channels.add("telegram")}
+    else{
+      if(!S.channels.size){toast("Pick at least one way to reach you.");return}
+      for(const c of S.channels){if(c!=="push"&&!contact()[c]){toast(`Add your ${CH[c]} details.`);$("#in-"+c+" input").focus();return}}
+      if(S.channels.has("push")){
+        if(!("Notification"in window)){toast("This browser can't show pop-ups. Choose another option too.");return}
+        const p=await Notification.requestPermission();
+        if(p!=="granted"){toast("Pop-ups were blocked. Pick another option or allow them in your browser.");return}
+        try{pushSubscription=await subscribePush()}catch(e){console.warn(e)}
+      }
+    }
+  }
+  if(S.step===6){await save();return}
+  go(S.step+1);
+}
+$("#nextBtn").onclick=next;$("#backBtn").onclick=()=>go(S.step-1);
+$("#anotherBtn").onclick=()=>{reset();go(0)};
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&$("#s-new").classList.contains("on")&&![0,1,7].includes(S.step)){e.preventDefault();next()}});
+const contact=()=>({whatsapp:$("#wa").value.trim(),telegram:$("#tgu").value.trim(),email:$("#em").value.trim(),sms:$("#sms").value.trim()});
+const whenText=a=>({any:"any time","3m":"next 3 months",winter:"this winter",summer:"next summer",pick:`${a.d1||"?"} → ${a.d2||"open"}`})[a.when]||a.when;
+function renderSummary(){
+  const sel=$("#airline").selectedOptions[0];const c=$("#cur").value;
+  $("#summary").innerHTML=[["From",S.from[1]+" ("+S.from[0]+")"],["To",S.to?S.to[1]+" ("+S.to[0]+")":"Anywhere"],["When",whenText({when:S.when,d1:$("#d1").value,d2:$("#d2").value})],
+    ["Seat",CABIN[S.cabin]+(S.stops==="0"?", nonstop":"")],["Airline",sel.value||"Any"],["Alert me under",fmt(+price.value,c)],
+    ["Send to",tg?"Telegram":[...S.channels].map(x=>CH[x]).join(", ")]].map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join("");
+}
+const iso=d=>d.toISOString().slice(0,10);
+function representativeDates(){
+  const t=new Date();const plus=n=>{const x=new Date(t);x.setDate(x.getDate()+n);return x};let d1,d2;
+  if(S.when==="pick"&&$("#d1").value){d1=$("#d1").value;d2=$("#d2").value||null}
+  else if(S.when==="winter"){const y=t.getMonth()>=1?t.getFullYear()+1:t.getFullYear();d1=`${y}-01-20`;d2=`${y}-02-03`}
+  else if(S.when==="summer"){const y=t.getMonth()>=6?t.getFullYear()+1:t.getFullYear();d1=`${y}-07-05`;d2=`${y}-07-19`}
+  else if(S.when==="3m"){d1=iso(plus(45));d2=iso(plus(59))}
+  else{d1=iso(plus(30));d2=iso(plus(44))}
+  return{d1,d2};
+}
+function payload(){
+  const {d1,d2}=representativeDates();const sel=$("#airline").selectedOptions[0];const c=$("#cur").value;
+  return{trip_type:d2?"round_trip":"one_way",origin:S.from[0],destination:S.to?S.to[0]:null,dep_date:d1,return_date:d2,
+    cabin_class:{any:"economy",economy:"economy",premium:"premium_economy",business:"business",first:"first"}[S.cabin],
+    airline:(sel&&sel.dataset.code)||"ALL",max_stops:S.stops,max_price:+price.value,currency:c,
+    channels:[...S.channels],contact:{...contact(),push:pushSubscription}};
+}
+async function save(){
+  const p=payload();
+  if(tg){if(!S.to){toast("Inside Telegram I need a destination.");go(1);return}p.max_price=Math.round(toCAD(p.max_price,p.currency));p.currency="CAD";buzz("success");tg.sendData(JSON.stringify(p));tg.close();return}
+  $("#nextBtn").disabled=true;
+  try{
+    if(API&&serverChannels){const r=await api("/alerts",{method:"POST",body:JSON.stringify(p)});alerts.unshift(fromServer(r.alert))}
+    else{alerts.unshift({id:Date.now().toString(36),from:p.origin,to:p.destination||"",when:S.when,d1:p.dep_date,d2:p.return_date,cabin:S.cabin,airline:$("#airline").value,price:p.max_price,cur:p.currency,channels:p.channels,paused:false});persistLocal()}
+  }catch(e){toast("Couldn't save: "+e.message);$("#nextBtn").disabled=false;return}
+  $("#nextBtn").disabled=false;
+  const m=matches(p).length;$("#doneTxt").textContent=m?`${m} deal${m>1?"s":""} on the board already match — check the Deals tab.`:"I'll message you the moment a fare drops.";
+  confetti();buzz("success");go(7);
+}
+function reset(){S.from=S.to=null;S.when="any";S.cabin="any";S.stops="ANY";S.channels.clear();$("#fromIn").value=$("#toIn").value="";$("#fromRes").innerHTML=$("#toRes").innerHTML="";
+  $$("#whenOpts .opt,#cabinOpts .opt,#stopOpts .opt").forEach(o=>o.setAttribute("aria-pressed",["any","ANY"].includes(o.dataset.v)));$$("#chOpts .opt").forEach(o=>o.setAttribute("aria-pressed",false));$$(".sub-in").forEach(s=>s.classList.remove("open"));$("#dates").classList.remove("open")}
+function confetti(){const c=$("#confetti");c.innerHTML="";const cols=["#FF6B35","#FFC94A","#1F8A70","#14213D","#2AABEE"];for(let i=0;i<60;i++){const s=document.createElement("i");s.style.left=Math.random()*100+"vw";s.style.background=cols[i%5];s.style.animationDelay=Math.random()*.5+"s";s.style.animationDuration=1.3+Math.random()+"s";c.appendChild(s)}setTimeout(()=>c.innerHTML="",2600)}
+
+let DEALS=[
+{from:"YYZ",to:"LIS",cabin:"economy",price:398,was:890,cur:"CAD",type:"error",src:"FlyerTalk",title:"Toronto to Lisbon — surcharge mistake, book direct",age:12,url:"#"},
+{from:"YYZ",to:"NRT",cabin:"business",price:2140,was:5600,cur:"CAD",type:"flash",src:"BusinessClassDeals",title:"Toronto to Tokyo in business, flash sale ends Tuesday",age:41,url:"#"},
+{from:"YUL",to:"CDG",cabin:"economy",price:441,was:820,cur:"CAD",type:"flash",src:"Secret Flying",title:"Montreal to Paris nonstop, bag included",age:65,url:"#"},
+{from:"LHE",to:"KUL",cabin:"economy",price:52000,was:98000,cur:"PKR",type:"flash",src:"r/flightdeals",title:"Lahore to Kuala Lumpur, Malaysia Airlines promo",age:90,url:"#"},
+{from:"JFK",to:"DUB",cabin:"economy",price:289,was:640,cur:"USD",type:"flash",src:"Secret Flying",title:"New York to Dublin nonstop",age:140,url:"#"},
+{from:"YYZ",to:"DEL",cabin:"business",price:2880,was:7100,cur:"CAD",type:"mistake",src:"FlyerTalk",title:"Toronto to Delhi business — likely mistake fare",age:18,url:"#"},
+];
+let filter="all";
+$("#filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;$$("#filters button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderDeals()});
+const TYPE={error:"Error fare",mistake:"Mistake fare",flash:"Flash sale",deal:"Deal"};
+function matches(p){return DEALS.filter(d=>d.from===p.origin&&(!p.destination||d.to===p.destination)&&(p.cabin_class==="economy"||d.cabin===p.cabin_class||(p.cabin_class==="premium_economy"&&d.cabin==="premium"))&&d.price&&toCAD(d.price,d.cur)<=toCAD(p.max_price,p.currency))}
+function renderDeals(){
+  const my=alerts[0]?alerts[0].from:(S.from?S.from[0]:null);
+  const list=DEALS.filter(d=>filter==="all"||(filter==="error"&&(d.type==="error"||d.type==="mistake"))||(filter==="business"&&(d.cabin==="business"||d.cabin==="first"))||(filter==="mine"&&my&&d.from===my));
+  $("#deals").innerHTML=list.length?list.map(d=>`<a class="deal" href="${d.url}" ${d.url!=="#"?'target="_blank" rel="noopener"':""}>
+    <div class="row1"><div class="price">${d.price?fmt(d.price,d.cur):"See post"}${d.was?`<small>usually ${fmt(d.was,d.cur)}</small>`:""}</div><span class="tag ${d.type}">${TYPE[d.type]||"Deal"}</span></div>
+    <div class="cities">${d.from?(CITY[d.from]||d.from):"?"} → ${d.to?(CITY[d.to]||d.to):"several cities"}</div>
+    <div class="meta">${d.title}${d.cabin&&d.cabin!=="economy"?" · "+(CABIN[d.cabin]||d.cabin):""}</div>
+    <div class="foot"><span>${d.src} · ${ago(d.age)}</span><b>Open ›</b></div></a>`).join("")
+  :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
+}
+
+function fromServer(r){const cab={economy:"economy",premium_economy:"premium",business:"business",first:"first"}[r.cabin_class]||"any";
+  return{id:String(r.id),from:r.origin,to:r.destination||"",when:"pick",d1:r.departure_date,d2:r.return_date||"",cabin:cab,airline:r.preferred_airline&&r.preferred_airline!=="ALL"?(CODE_NAME[r.preferred_airline]||r.preferred_airline):"",price:r.target_price,cur:"CAD",channels:r.channels||[],paused:!!r.paused,lastLow:r.last_low}}
+function persistLocal(){if(!API||!serverChannels)try{localStorage.setItem("fw-alerts",JSON.stringify(alerts))}catch{}}
 function renderAlerts(){
-  const el=$("#alerts");$("#mineSub").textContent=alerts.length?`${alerts.length} alert${alerts.length>1?"s":""} watching for you.`:"Nothing saved yet.";
-  if(!alerts.length){el.innerHTML=`<div class="empty">Your saved alerts will show up here. Set one up above — it takes about a minute.</div>`;return}
-  el.innerHTML=alerts.map(a=>`<div class="alert ${a.paused?"paused":""}" data-id="${a.id}">
-    <div><div class="route">${CITY[a.from]||a.from} → ${a.to?CITY[a.to]:"Anywhere"}</div>
-    <div class="meta">Under <em>${fmt(a.price,a.cur)}</em> · ${CABIN_LABEL[a.cabin]} · ${a.airline||"Any airline"} · ${{any:"any time","3m":"next 3 months",winter:"this winter",summer:"next summer",pick:(a.d1||"?")+" to "+(a.d2||"?")}[a.when]}${a.lastLow?` · lowest seen <em>${fmt(a.lastLow,"CAD")}</em>`:""}${a.paused?" · <em>paused</em>":""}</div>
-    <div class="via">${a.channels.map(c=>`<span>${CH_LABEL[c]}</span>`).join("")}</div></div>
-    <div class="acts"><button type="button" data-act="pause">${a.paused?"Resume":"Pause"}</button><button type="button" data-act="del">Delete</button></div></div>`).join("");
+  $("#mineSub").textContent=alerts.length?`${alerts.length} route${alerts.length>1?"s":""} being watched.`:"Nothing yet.";
+  $("#alerts").innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.paused?"paused":""}" data-id="${a.id}">
+    <div class="cities">${CITY[a.from]||a.from} → ${a.to?(CITY[a.to]||a.to):"Anywhere"}</div>
+    <div class="meta">Under <em>${fmt(a.price,a.cur)}</em> · ${CABIN[a.cabin]} · ${a.airline||"any airline"} · ${whenText(a)}${a.lastLow?` · lowest seen <em>${fmt(a.lastLow,"CAD")}</em>`:""}${a.paused?" · <em>paused</em>":""}</div>
+    <div class="via">${a.channels.map(c=>`<span>${CH[c]||c}</span>`).join("")}</div>
+    <div class="acts"><button data-act="pause">${a.paused?"Resume":"Pause"}</button><button data-act="del">Delete</button></div></div>`).join("")
+  :`<div class="empty">You haven't set any alerts yet.<br><button class="btn btn-primary" onclick="showTab('new')">Set my first alert</button></div>`;
 }
 $("#alerts").addEventListener("click",async e=>{const b=e.target.closest("[data-act]");if(!b)return;const id=b.closest(".alert").dataset.id,a=alerts.find(x=>x.id===id);
   try{
-    if(b.dataset.act==="pause"){a.paused=!a.paused;if(API&&serverChannels)await api("/alerts/"+id,{method:"PATCH",body:JSON.stringify({paused:a.paused})});toast(a.paused?"Alert paused.":"Alert resumed.")}
-    else{if(API&&serverChannels)await api("/alerts/"+id,{method:"DELETE"});alerts=alerts.filter(x=>x.id!==id);toast("Alert deleted.")}
+    if(b.dataset.act==="pause"){a.paused=!a.paused;if(API&&serverChannels)await api("/alerts/"+id,{method:"PATCH",body:JSON.stringify({paused:a.paused})});toast(a.paused?"Paused.":"Resumed.")}
+    else{if(API&&serverChannels)await api("/alerts/"+id,{method:"DELETE"});alerts=alerts.filter(x=>x.id!==id);toast("Deleted.")}
   }catch(err){toast("Couldn't update: "+err.message);return}
-  await persist();renderAlerts()});
+  persistLocal();renderAlerts()});
 
-// ---------- previews ----------
-function renderPreview(){
-  const d=DEALS[0],r=`${CITY[d.from]} → ${CITY[d.to]}`,p=fmt(d.price,d.cur),w=fmt(d.was,d.cur);
-  $("#preview").innerHTML=`
-  <div class="phone"><div class="app">WhatsApp</div><div class="bubble">✈️ Deal found: ${r}
-${p} round trip (usually ${w})
-${d.airline}, ${CABIN_LABEL[d.cabin].toLowerCase()}, ${d.when}
-Book at ${d.airline.split(" ")[0].toLowerCase()}.com — search Jan 14 → Jan 28 to start.
-Reply STOP to pause alerts.<time>now</time></div></div>
-  <div class="phone"><div class="app">Telegram</div><div class="bubble tg">🔥 ${TYPE_LABEL[d.type]}: ${r} for ${p}
-That's ${Math.round((1-d.price/d.was)*100)}% below normal. ${d.note}.
-[ Book on ${d.airline} ]  [ Pause ]<time>now</time></div></div>
-  <div class="phone"><div class="app">Pop-up on this device</div><div class="bubble push"><b>FareWatch</b>
-${r} just dropped to ${p} · ${d.airline}
-Tap to see how to book.<time>now</time></div></div>`;
-}
-renderPreview();
-$("#testBtn").onclick=async()=>{
-  const chs=[...state.channels];
-  if(chs.includes("push")&&"Notification"in window&&Notification.permission==="granted"){try{new Notification("FareWatch test",{body:"Toronto → Lisbon just dropped to CA$398. This is how a real alert looks."})}catch{}}
-  if(!chs.length){toast("Pick a way to reach you first, then send a test.");return}
-  if(API&&serverChannels){
+async function boot(){
+  if(tg){tg.expand();tg.ready();document.body.classList.add("in-telegram");$$('nav.tabs button[data-tab="mine"]').forEach(b=>b.remove());if(tg.colorScheme==="dark")root.dataset.theme="dark";
+    $("#chOpts").innerHTML=`<div class="opt" aria-pressed="true"><span class="ico" style="background:#2AABEE">T</span><span>Right here in Telegram<small>Use "My Active Alerts" in the chat to manage them</small></span></div>`;}
+  if(API){
     try{
-      if(chs.includes("push")&&!pushSubscription)pushSubscription=await subscribePush();
-      const a=currentAlert();const r=await api("/test-alert",{method:"POST",body:JSON.stringify({channels:chs,contact:{...a.contact,push:pushSubscription}})});
-      const ok=Object.entries(r.sent).filter(([,v])=>v).map(([k])=>CH_LABEL[k]);
-      toast(ok.length?`Test sent to ${ok.join(", ")}. Check your phone.`:"Nothing sent — check the details you entered.");
-    }catch(err){toast("Couldn't send: "+err.message)}
-  }else toast(`In sample mode nothing is sent. Point the page at your API to test ${chs.map(c=>CH_LABEL[c]).join(", ")}.`);
-};
-
-// ---------- toast ----------
-let tt;function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),4200)}
+      if(!token){token=(await api("/token")).watch_token;try{localStorage.setItem("fw-token",token)}catch{}}
+      const cfg=await api("/config");serverChannels=cfg.channels||[];vapidKey=cfg.vapid_public_key||null;
+      $$("#chOpts .opt[data-v]").forEach(b=>{if(!serverChannels.includes(b.dataset.v)){b.disabled=true;b.style.opacity=".45";b.querySelector("span:last-child").innerHTML+='<small>Coming soon</small>'}});
+      const d=(await api("/deals?limit=40")).deals||[];
+      if(d.length){DEALS=d.map(x=>({from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",src:x.source,title:x.title,url:x.url,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals from the forums`}
+      if(!tg)alerts=((await api("/alerts")).alerts||[]).map(fromServer);
+    }catch(e){console.warn("API unavailable, sample mode:",e.message)}
+  }
+  if(!API||!serverChannels){try{alerts=JSON.parse(localStorage.getItem("fw-alerts")||"[]")}catch{alerts=[]}}
+  renderDeals();renderAlerts();go(0);
+}
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),3800)}
+boot();
 </script>
 </body>
 </html>
