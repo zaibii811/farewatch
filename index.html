@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Point this at your Render API to go live; leave empty for sample mode -->
+<meta name="farewatch-api" content="">
 <title>FareWatch — cheap flights find you</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -200,7 +202,7 @@ footer{color:var(--muted);font-size:.9rem;padding:20px 0 40px;border-top:1px sol
     <div class="board" id="board" aria-label="Live deal board">
       <div class="board-head"><span>DEALS SPOTTED</span><span class="live"><i></i>LIVE</span></div>
       <div class="rows" id="rows"></div>
-      <div class="board-foot">Sample feed. Prices shown as found, round trip unless noted.</div>
+      <div class="board-foot" id="boardFoot">Sample feed. Prices shown as found, round trip unless noted.</div>
     </div>
   </div>
 
@@ -249,14 +251,22 @@ footer{color:var(--muted);font-size:.9rem;padding:20px 0 40px;border-top:1px sol
         </div>
 
         <div class="field">
+          <label>Stops</label>
+          <div class="chips" id="stops">
+            <button type="button" class="chip" data-stops="ANY" aria-pressed="true">Any</button>
+            <button type="button" class="chip" data-stops="0" aria-pressed="false">Nonstop only</button>
+            <button type="button" class="chip" data-stops="1" aria-pressed="false">1 stop max</button>
+          </div>
+        </div>
+        <div class="field">
           <label for="airline">Airline</label>
           <select class="control" id="airline">
             <option value="">Any airline</option>
-            <option>Air Canada</option><option>WestJet</option><option>Porter</option><option>Air Transat</option>
-            <option>United</option><option>Delta</option><option>American</option><option>British Airways</option>
-            <option>Lufthansa</option><option>Air France</option><option>KLM</option><option>Emirates</option>
-            <option>Qatar Airways</option><option>Turkish Airlines</option><option>Cathay Pacific</option>
-            <option>Japan Airlines</option><option>ANA</option><option>Singapore Airlines</option><option>Aer Lingus</option>
+            <option value="Air Canada" data-code="AC">Air Canada</option><option value="WestJet" data-code="WS">WestJet</option><option value="Porter" data-code="PD">Porter</option><option value="Air Transat" data-code="TS">Air Transat</option>
+            <option value="United" data-code="UA">United</option><option value="Delta" data-code="DL">Delta</option><option value="American" data-code="AA">American</option><option value="British Airways" data-code="BA">British Airways</option>
+            <option value="Lufthansa" data-code="LH">Lufthansa</option><option value="Air France" data-code="AF">Air France</option><option value="KLM" data-code="KL">KLM</option><option value="Emirates" data-code="EK">Emirates</option>
+            <option value="Qatar Airways" data-code="QR">Qatar Airways</option><option value="Turkish Airlines" data-code="TK">Turkish Airlines</option><option value="Cathay Pacific" data-code="CX">Cathay Pacific</option>
+            <option value="Japan Airlines" data-code="JL">Japan Airlines</option><option value="ANA" data-code="NH">ANA</option><option value="Singapore Airlines" data-code="SQ">Singapore Airlines</option><option value="Aer Lingus" data-code="EI">Aer Lingus</option>
           </select>
         </div>
 
@@ -349,6 +359,7 @@ const CITY=Object.fromEntries(AIRPORTS.map(a=>[a[0],a[1]]));
 const TYPE_LABEL={error:"Error fare",flash:"Flash sale",mistake:"Mistake fare"};
 const CABIN_LABEL={any:"Any class",economy:"Economy",premium:"Premium economy",business:"Business",first:"First"};
 const CH_LABEL={whatsapp:"WhatsApp",telegram:"Telegram",push:"This device",email:"Email",sms:"Text"};
+const CODE_NAME=Object.fromEntries([...document.querySelectorAll("#airline option[data-code]")].map(o=>[o.dataset.code,o.value]));
 const fmt=(n,c)=>new Intl.NumberFormat("en-CA",{style:"currency",currency:c,maximumFractionDigits:0}).format(n);
 const ago=m=>m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} d ago`;
 const $=s=>document.querySelector(s);
@@ -356,7 +367,7 @@ const $=s=>document.querySelector(s);
 // ---------- board ----------
 function renderBoard(){
   const rows=$("#rows");rows.innerHTML="";
-  [...DEALS].sort((a,b)=>a.age-b.age).slice(0,8).forEach((d,i)=>{
+  [...DEALS].filter(d=>d.from&&d.to&&d.price).sort((a,b)=>a.age-b.age).slice(0,8).forEach((d,i)=>{
     const r=document.createElement("div");r.className="row"+(i===0?" new":"");
     r.innerHTML=`<div class="rt"><span class="flap">${d.from}</span> → <span class="flap">${d.to}</span><small>${CITY[d.from]} to ${CITY[d.to]} · ${d.airline}</small></div>
       <div>${CABIN_LABEL[d.cabin].split(" ")[0]}</div>
@@ -384,7 +395,7 @@ $("#themeBtn").onclick=()=>{
 };
 
 // ---------- airport pickers ----------
-const state={from:"",to:"",when:"any",cabin:"any",channels:new Set()};
+const state={from:"",to:"",when:"any",cabin:"any",stops:"ANY",channels:new Set()};
 function wireAirport(inputId,listId,key){
   const input=$(inputId),list=$(listId);
   function show(q){
@@ -412,6 +423,7 @@ function chips(groupSel,attr,key,after){
 }
 chips("#when","when","when",()=>$("#dates").classList.toggle("open",state.when==="pick"));
 chips("#cabin","cabin","cabin");
+chips("#stops","stops","stops");
 $("#airline").onchange=update;
 
 // ---------- price ----------
@@ -434,20 +446,20 @@ $("#pushBtn").onclick=async()=>{
   if(!("Notification"in window)){$("#pushHint").textContent="This browser can't show pop-ups. Choose another option too.";return}
   const p=await Notification.requestPermission();
   $("#pushHint").textContent=p==="granted"?"Pop-ups are on for this device.":"Pop-ups were blocked. You can change that in your browser settings.";
-  if(p==="granted")try{new Notification("FareWatch is ready",{body:"We'll pop up here when a fare drops."})}catch{}
+  if(p==="granted"){try{pushSubscription=await subscribePush()}catch(e){console.warn(e)}try{new Notification("FareWatch is ready",{body:"We'll pop up here when a fare drops."})}catch{}}
 };
 
 // ---------- matching ----------
-const currentAlert=()=>({from:state.from,to:state.to,when:state.when,d1:$("#d1").value,d2:$("#d2").value,cabin:state.cabin,airline:$("#airline").value,price:+price.value,cur:$("#cur").value,channels:[...state.channels],contact:{whatsapp:$("#wa").value,telegram:$("#tg").value,email:$("#em").value,sms:$("#sms").value}});
+const currentAlert=()=>({from:state.from,to:state.to,when:state.when,d1:$("#d1").value,d2:$("#d2").value,cabin:state.cabin,stops:state.stops,airline:$("#airline").value,price:+price.value,cur:$("#cur").value,channels:[...state.channels],contact:{whatsapp:$("#wa").value,telegram:$("#tg").value,email:$("#em").value,sms:$("#sms").value}});
 const RATE={CAD:1,USD:1.36,EUR:1.48,GBP:1.72};
 const toCAD=(n,c)=>n*RATE[c];
 function matches(a){return DEALS.filter(d=>(!a.from||d.from===a.from)&&(!a.to||d.to===a.to)&&(a.cabin==="any"||d.cabin===a.cabin)&&(!a.airline||d.airline===a.airline)&&toCAD(d.price,d.cur)<=toCAD(a.price,a.cur))}
 function dealCard(d){return `<div class="deal"><span class="tag ${d.type}" style="align-self:flex-start">${TYPE_LABEL[d.type]}</span>
-  <div class="dprice">${fmt(d.price,d.cur)}<small>${fmt(d.was,d.cur)}</small></div>
+  <div class="dprice">${fmt(d.price,d.cur)}${d.was?`<small>${fmt(d.was,d.cur)}</small>`:""}</div>
   <div class="droute">${CITY[d.from]} → ${CITY[d.to]}</div>
-  <div class="dmeta">${d.airline} · ${CABIN_LABEL[d.cabin]} · ${d.when}<br>${d.note} · spotted <time data-age="${d.age}">${ago(d.age)}</time></div>
+  <div class="dmeta">${d.url?"":d.airline+" · "}${CABIN_LABEL[d.cabin]||""}${d.when?" · "+d.when:""}<br>${d.note} · spotted <time data-age="${d.age}">${ago(d.age)}</time></div>
   <div class="dsrc"><span>Found on <a href="#board">${d.src}</a></span><span>${d.from}–${d.to}</span></div>
-  <button type="button" class="book" data-book="${d.from}-${d.to}">How do I book this?</button></div>`}
+  ${d.url?`<a class="book" style="text-align:center;text-decoration:none;display:block" href="${d.url}" target="_blank" rel="noopener">Open the deal</a>`:`<button type="button" class="book" data-book="${d.from}-${d.to}">How do I book this?</button>`}</div>`}
 function update(){
   const a=currentAlert(),mc=$("#matchCount"),sec=$("#matchesSec");
   if(!a.from){mc.textContent='Fill in "Flying from" to see current matches';mc.className="matches none";sec.hidden=true;return}
@@ -459,24 +471,67 @@ function update(){
 document.addEventListener("click",e=>{const b=e.target.closest("[data-book]");if(!b)return;
   toast("Go to the airline's website, search these dates, and pay with a card. We'll email step-by-step help if you saved an email.")});
 
-// ---------- storage (db when published, localStorage fallback) ----------
-let alerts=[],store=null;
+// ---------- API client (falls back to this-device-only sample mode) ----------
+const API=(document.querySelector('meta[name="farewatch-api"]').content||window.FAREWATCH_API||"").replace(/\/$/,"");
+let token=null,serverChannels=null,vapidKey=null,alerts=[];
+try{token=localStorage.getItem("fw-token")}catch{}
+async function api(path,opts={}){
+  if(!API)throw new Error("no api");
+  const r=await fetch(API+path,{...opts,headers:{"Content-Type":"application/json","X-Watch-Token":token||"",...(opts.headers||{})}});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.detail||r.statusText);
+  return j;
+}
+const iso=d=>d.toISOString().slice(0,10);
+function representativeDates(a){
+  // The fare scanner checks one concrete departure (and return) date; presets map to a sensible date.
+  const t=new Date();const plus=n=>{const x=new Date(t);x.setDate(x.getDate()+n);return x};let d1,d2;
+  if(a.when==="pick"&&a.d1){d1=a.d1;d2=a.d2||null}
+  else if(a.when==="winter"){const y=t.getMonth()>=1?t.getFullYear()+1:t.getFullYear();d1=`${y}-01-20`;d2=`${y}-02-03`}
+  else if(a.when==="summer"){const y=t.getMonth()>=6?t.getFullYear()+1:t.getFullYear();d1=`${y}-07-05`;d2=`${y}-07-19`}
+  else if(a.when==="3m"){d1=iso(plus(45));d2=iso(plus(59))}
+  else{d1=iso(plus(30));d2=iso(plus(44))}
+  return {d1,d2};
+}
+function apiPayload(a){
+  const {d1,d2}=representativeDates(a);const sel=$("#airline").selectedOptions[0];
+  return {origin:a.from,destination:a.to||null,dep_date:d1,return_date:d2,
+    cabin_class:{any:"economy",economy:"economy",premium:"premium_economy",business:"business",first:"first"}[a.cabin],
+    airline:(sel&&sel.dataset.code)||"ALL",max_stops:a.stops||"ANY",max_price:a.price,currency:a.cur,
+    channels:a.channels,contact:{email:a.contact.email,whatsapp:a.contact.whatsapp,sms:a.contact.sms,telegram:a.contact.telegram,push:pushSubscription}};
+}
+// server row -> the shape renderAlerts expects
+function fromServer(r){
+  const cab={economy:"economy",premium_economy:"premium",business:"business",first:"first"}[r.cabin_class]||"any";
+  return {id:String(r.id),from:r.origin,to:r.destination||"",when:"pick",d1:r.departure_date,d2:r.return_date||"",cabin:cab,
+    airline:r.preferred_airline&&r.preferred_airline!=="ALL"?(CODE_NAME[r.preferred_airline]||r.preferred_airline):"",price:r.target_price,cur:"CAD",
+    channels:r.channels||[],paused:!!r.paused,lastLow:r.last_low};
+}
 async function initStore(){
-  try{
-    if(window.claude&&claude.use){
-      const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
-      const uid=user?await user.id():null;
-      if(db&&uid){store=db.doc("data/users/"+uid+"/alerts");
-        try{const s=await store.get();if(s&&s.exists&&s.data){alerts=(s.data().items||s.data.items||[])}}catch(e){}
-        renderAlerts();return}
-    }
-  }catch(e){}
-  try{alerts=JSON.parse(localStorage.getItem("fw-alerts")||"[]")}catch{alerts=[]}
+  if(API){
+    try{
+      if(!token){token=(await api("/token")).watch_token;try{localStorage.setItem("fw-token",token)}catch{}}
+      const cfg=await api("/config");serverChannels=cfg.channels||[];vapidKey=cfg.vapid_public_key||null;
+      document.querySelectorAll("#channels .ch").forEach(b=>{if(!serverChannels.includes(b.dataset.ch)){b.disabled=true;b.style.opacity=".45";b.querySelector("small").textContent="Coming soon";}});
+      const d=(await api("/deals")).deals||[];
+      if(d.length){DEALS.length=0;d.forEach(x=>DEALS.push({from:x.origin,to:x.destination,airline:x.source,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:{error:"error",mistake:"mistake",flash:"flash"}[x.deal_type]||"flash",src:x.source,when:"",note:x.title,url:x.url,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));
+        CITY_FALLBACK();renderBoard();$("#boardFoot").textContent="Live feed from public deal forums. Prices as posted; check the source before booking.";}
+      alerts=((await api("/alerts")).alerts||[]).map(fromServer);
+    }catch(e){console.warn("API unavailable, sample mode:",e.message);}
+  }
+  if(!API){try{alerts=JSON.parse(localStorage.getItem("fw-alerts")||"[]")}catch{alerts=[]}}
   renderAlerts();
 }
-async function persist(){
-  try{localStorage.setItem("fw-alerts",JSON.stringify(alerts))}catch{}
-  if(store){try{await store.set({items:alerts,updated:Date.now()})}catch(e){toast("Saved on this device only — couldn't reach the cloud.")}}
+function CITY_FALLBACK(){DEALS.forEach(d=>{[d.from,d.to].forEach(c=>{if(c&&!CITY[c])CITY[c]=c})})}
+async function persist(){if(!API){try{localStorage.setItem("fw-alerts",JSON.stringify(alerts))}catch{}}}
+// device pop-ups via Web Push (free, needs the service worker in sw.js)
+let pushSubscription=null;
+async function subscribePush(){
+  if(!("serviceWorker"in navigator)||!("PushManager"in window)||!vapidKey)return null;
+  const reg=await navigator.serviceWorker.register("sw.js");
+  const key=Uint8Array.from(atob(vapidKey.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(vapidKey.length/4)*4,"=")),c=>c.charCodeAt(0));
+  const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+  return sub.toJSON();
 }
 initStore();
 
@@ -487,8 +542,16 @@ $("#form").addEventListener("submit",async e=>{
   if(!a.channels.length){toast("Pick at least one way to reach you.");$("#channels").scrollIntoView({behavior:"smooth",block:"center"});return}
   const missing=a.channels.find(c=>c!=="push"&&!a.contact[c]);
   if(missing){toast(`Add your ${CH_LABEL[missing]} details so we can reach you.`);$("#in-"+missing+" input").focus();return}
-  a.id=Date.now().toString(36);a.paused=false;a.created=new Date().toISOString();
-  alerts.unshift(a);await persist();renderAlerts();
+  if(API&&serverChannels){
+    try{
+      if(a.channels.includes("push")&&!pushSubscription)pushSubscription=await subscribePush();
+      const r=await api("/alerts",{method:"POST",body:JSON.stringify(apiPayload(a))});
+      alerts.unshift(fromServer(r.alert));
+    }catch(err){toast("Couldn't save: "+err.message);return}
+  }else{
+    a.id=Date.now().toString(36);a.paused=false;a.created=new Date().toISOString();alerts.unshift(a);await persist();
+  }
+  renderAlerts();
   const m=matches(a).length;
   toast(m?`Alert saved. ${m} matching deal${m>1?"s are":" is"} live now — scroll up to see.`:"Alert saved. We'll message you the moment something drops.");
   $("#mine").scrollIntoView({behavior:"smooth"});
@@ -498,12 +561,15 @@ function renderAlerts(){
   if(!alerts.length){el.innerHTML=`<div class="empty">Your saved alerts will show up here. Set one up above — it takes about a minute.</div>`;return}
   el.innerHTML=alerts.map(a=>`<div class="alert ${a.paused?"paused":""}" data-id="${a.id}">
     <div><div class="route">${CITY[a.from]||a.from} → ${a.to?CITY[a.to]:"Anywhere"}</div>
-    <div class="meta">Under <em>${fmt(a.price,a.cur)}</em> · ${CABIN_LABEL[a.cabin]} · ${a.airline||"Any airline"} · ${{any:"any time","3m":"next 3 months",winter:"this winter",summer:"next summer",pick:(a.d1||"?")+" to "+(a.d2||"?")}[a.when]}${a.paused?" · <em>paused</em>":""}</div>
+    <div class="meta">Under <em>${fmt(a.price,a.cur)}</em> · ${CABIN_LABEL[a.cabin]} · ${a.airline||"Any airline"} · ${{any:"any time","3m":"next 3 months",winter:"this winter",summer:"next summer",pick:(a.d1||"?")+" to "+(a.d2||"?")}[a.when]}${a.lastLow?` · lowest seen <em>${fmt(a.lastLow,"CAD")}</em>`:""}${a.paused?" · <em>paused</em>":""}</div>
     <div class="via">${a.channels.map(c=>`<span>${CH_LABEL[c]}</span>`).join("")}</div></div>
     <div class="acts"><button type="button" data-act="pause">${a.paused?"Resume":"Pause"}</button><button type="button" data-act="del">Delete</button></div></div>`).join("");
 }
 $("#alerts").addEventListener("click",async e=>{const b=e.target.closest("[data-act]");if(!b)return;const id=b.closest(".alert").dataset.id,a=alerts.find(x=>x.id===id);
-  if(b.dataset.act==="pause"){a.paused=!a.paused;toast(a.paused?"Alert paused.":"Alert resumed.")}else{alerts=alerts.filter(x=>x.id!==id);toast("Alert deleted.")}
+  try{
+    if(b.dataset.act==="pause"){a.paused=!a.paused;if(API&&serverChannels)await api("/alerts/"+id,{method:"PATCH",body:JSON.stringify({paused:a.paused})});toast(a.paused?"Alert paused.":"Alert resumed.")}
+    else{if(API&&serverChannels)await api("/alerts/"+id,{method:"DELETE"});alerts=alerts.filter(x=>x.id!==id);toast("Alert deleted.")}
+  }catch(err){toast("Couldn't update: "+err.message);return}
   await persist();renderAlerts()});
 
 // ---------- previews ----------
@@ -523,10 +589,18 @@ ${r} just dropped to ${p} · ${d.airline}
 Tap to see how to book.<time>now</time></div></div>`;
 }
 renderPreview();
-$("#testBtn").onclick=()=>{
+$("#testBtn").onclick=async()=>{
   const chs=[...state.channels];
   if(chs.includes("push")&&"Notification"in window&&Notification.permission==="granted"){try{new Notification("FareWatch test",{body:"Toronto → Lisbon just dropped to CA$398. This is how a real alert looks."})}catch{}}
-  toast(chs.length?`Test alert sent to ${chs.map(c=>CH_LABEL[c]).join(", ")}. Check your phone.`:"Pick a way to reach you first, then send a test.");
+  if(!chs.length){toast("Pick a way to reach you first, then send a test.");return}
+  if(API&&serverChannels){
+    try{
+      if(chs.includes("push")&&!pushSubscription)pushSubscription=await subscribePush();
+      const a=currentAlert();const r=await api("/test-alert",{method:"POST",body:JSON.stringify({channels:chs,contact:{...a.contact,push:pushSubscription}})});
+      const ok=Object.entries(r.sent).filter(([,v])=>v).map(([k])=>CH_LABEL[k]);
+      toast(ok.length?`Test sent to ${ok.join(", ")}. Check your phone.`:"Nothing sent — check the details you entered.");
+    }catch(err){toast("Couldn't send: "+err.message)}
+  }else toast(`In sample mode nothing is sent. Point the page at your API to test ${chs.map(c=>CH_LABEL[c]).join(", ")}.`);
 };
 
 // ---------- toast ----------

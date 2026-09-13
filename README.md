@@ -11,11 +11,18 @@ Cheap flights find you. A single-page app where anyone — from first-time booke
 - Live "deals that match right now" as you type
 - Saved alerts with pause/delete, message previews, bigger-text mode, light/dark
 
-## Status
-The deal feed is sample data and alert delivery is a front-end prototype. To go live you need a backend that:
-1. Scrapes / ingests deal sources on a schedule and normalises them into the `DEALS` shape in `index.html`
-2. Stores alerts (the page posts the object built by `currentAlert()`)
-3. Matches new deals against alerts and sends via WhatsApp Business API, a Telegram bot, Web Push, email (SendGrid/SES) and SMS (Twilio)
+## Going live
+The backend lives in [Flight-bot](https://github.com/zaibii811/Flight-bot) (Telegram bot + API + scrapers, runs free on Render).
+Set the API address in `index.html`:
+
+```html
+<meta name="farewatch-api" content="https://your-app.onrender.com">
+```
+
+With it blank the page runs in **sample mode**: demo deals, alerts saved on this device only, nothing sent.
+With it set: live deals from the forums, alerts saved to the shared database, real Telegram/email/pop-up delivery, and only the channels the server has configured are enabled.
+
+`sw.js` must be served from the same folder as `index.html` for device pop-ups (Web Push) to work.
 
 ## Stack
 Plain HTML/CSS/JS, Google Fonts (Plus Jakarta Sans, DM Mono). No dependencies.
