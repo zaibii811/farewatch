@@ -148,6 +148,13 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .empty{border:2px dashed var(--line);border-radius:20px;padding:30px 20px;text-align:center;color:var(--muted)}
 .empty .btn{margin-top:14px}
 
+.plan{background:var(--hero);color:#fff;border-radius:20px;padding:16px 18px;margin-bottom:14px;box-shadow:0 14px 30px -16px rgba(47,107,255,.7)}
+.plan b{font-size:1.1rem}.plan p{margin:6px 0 12px;font-size:.92rem;opacity:.92}
+.plan a{display:inline-block;background:#fff;color:var(--ink);text-decoration:none;border-radius:12px;padding:11px 16px;font-weight:800}
+.plan.pro{background:linear-gradient(135deg,#00B37E,#0FA3B1)}
+.banner{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--sky);border-radius:14px;padding:10px 14px;margin-bottom:12px;font-weight:700;font-size:.92rem}
+.banner a{color:var(--blue);text-decoration:none;white-space:nowrap}
+.opt .pro-tag{margin-left:auto;background:var(--amber);color:#3A2A00;border-radius:8px;padding:3px 8px;font-size:.72rem;font-weight:800}
 .alert{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
 .alert.paused{opacity:.55}
 .alert .cities{font-weight:800;font-size:1.15rem}
@@ -173,6 +180,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
       <h1>Cheap flights, spotted today</h1>
       <p class="lede">Error fares and flash sales, found for you around the clock. Tap one to book.</p>
       <div class="live"><i></i><span id="liveTxt">Scanning fares right now</span></div>
+      <div id="tgBanner"></div>
       <div class="filters" id="filters">
         <button aria-pressed="true" data-f="all">All</button>
         <button aria-pressed="false" data-f="mine">From my city</button>
@@ -298,6 +306,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
     <section class="screen" id="s-mine">
       <h1>My alerts</h1>
       <p class="lede" id="mineSub">Everything I'm watching for you.</p>
+      <div id="planCard"></div>
       <div id="alerts"></div>
     </section>
   </main>
@@ -336,7 +345,7 @@ const tg=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDat
 const buzz=s=>{try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred(s)}catch{}};
 
 const API=($('meta[name="farewatch-api"]').content||window.FAREWATCH_API||"").replace(/\/$/,"");
-let token=null,serverChannels=null,vapidKey=null,alerts=[],pushSubscription=null;
+let token=null,serverChannels=null,vapidKey=null,alerts=[],pushSubscription=null,CFG={},ME={plan:"free"};
 try{token=localStorage.getItem("fw-token")}catch{}
 async function api(path,opts={}){
   if(!API)throw new Error("no api");
@@ -491,7 +500,7 @@ async function save(){
   try{
     if(API&&serverChannels){const r=await api("/alerts",{method:"POST",body:JSON.stringify(p)});alerts.unshift(fromServer(r.alert))}
     else{alerts.unshift({id:Date.now().toString(36),from:p.origin,to:p.destination||"",when:S.when,d1:p.dep_date,d2:p.return_date,cabin:S.cabin,airline:$("#airline").value,price:p.max_price,cur:p.currency,channels:p.channels,paused:false});persistLocal()}
-  }catch(e){toast("Couldn't save: "+e.message);$("#nextBtn").disabled=false;return}
+  }catch(e){toast(e.message);$("#nextBtn").disabled=false;if(/premium|upgrade/i.test(e.message)){setTimeout(()=>showTab("mine"),1200)}return}
   $("#nextBtn").disabled=false;
   const m=matches(p).length;$("#doneTxt").textContent=m?`${m} deal${m>1?"s":""} on the board already match — check the Deals tab.`:"I'll message you the moment a fare drops.";
   confetti();buzz("success");go(7);
@@ -544,7 +553,7 @@ function renderDeals(){
     <div class="chips">${d.airlineName?`<span>✈️ ${d.airlineName}</span>`:""}${d.alliance?`<span>${{"Star Alliance":"⭐","SkyTeam":"🔵","oneworld":"🔴"}[d.alliance]||""} ${d.alliance}</span>`:""}<span>💺 ${CABIN[d.cabin]||"Economy"}</span></div>
     <div class="desc">${d.from||d.to?describe(d):d.title}</div>
     <div class="miles" id="miles-${i}">${(m=>m?`<div style="margin-top:8px;font-size:.85rem;color:var(--muted);background:var(--paper);border-radius:10px;padding:10px 12px;line-height:1.4">${m}</div>`:`<div class="desc">Distance unknown for this route.</div>`)(milesLine(d))}</div>
-    <div class="foot"><button type="button" class="milesBtn" data-miles="${i}" aria-expanded="false">🏅 Miles earned</button><a class="book" href="${d.from?gflights(d.from,d.to,d.cabin):(d.book_url||"#")}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
+    <div class="foot"><button type="button" class="milesBtn" data-miles="${i}" aria-expanded="false">🏅 Miles earned</button><a class="book" href="${d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#")}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
   :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
 }
 
@@ -552,7 +561,13 @@ const destLabel=t=>!t?"Anywhere":t.startsWith("R:")?(REGIONS.find(r=>r[0]===t.sl
 function fromServer(r){const cab={economy:"economy",premium_economy:"premium",business:"business",first:"first"}[r.cabin_class]||"any";
   return{id:String(r.id),from:r.origin,to:r.destination||"",when:"pick",d1:r.departure_date,d2:r.return_date||"",cabin:cab,airline:r.preferred_airline&&r.preferred_airline!=="ALL"?(CODE_NAME[r.preferred_airline]||r.preferred_airline):"",price:r.target_price,cur:"CAD",channels:r.channels||[],paused:!!r.paused,lastLow:r.last_low}}
 function persistLocal(){if(!API||!serverChannels)try{localStorage.setItem("fw-alerts",JSON.stringify(alerts))}catch{}}
-function renderAlerts(){
+function renderPlan(){
+  const el=$("#planCard");if(!API||!serverChannels){el.innerHTML="";return}
+  if(ME.plan==="premium"){el.innerHTML=`<div class="plan pro"><b>⭐ Premium</b><p>Unlimited routes, instant deals, every channel. Thank you!</p></div>`;return}
+  const fl=ME.free_limits||{};
+  el.innerHTML=`<div class="plan"><b>Free plan</b><p>${fl.max_alerts||1} route · deals ${fl.delay_hours||12}h after Premium members · ${(fl.channels||[]).map(c=>CH[c]).join(" & ")} only</p>${ME.premium_available&&ME.checkout_url?`<a href="${ME.checkout_url}" target="_blank" rel="noopener">Go Premium — ${ME.price_label||""}</a>`:`<span style="opacity:.8;font-size:.9rem">Premium is opening soon.</span>`}</div>`;
+}
+function renderAlerts(){renderPlan();
   $("#mineSub").textContent=alerts.length?`${alerts.length} route${alerts.length>1?"s":""} being watched.`:"Nothing yet.";
   $("#alerts").innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.paused?"paused":""}" data-id="${a.id}">
     <div class="cities">${CITY[a.from]||a.from} → ${destLabel(a.to)}</div>
@@ -575,7 +590,12 @@ async function boot(){
     try{
       if(!token){token=(await api("/token")).watch_token;try{localStorage.setItem("fw-token",token)}catch{}}
       const cfg=await api("/config");serverChannels=cfg.channels||[];vapidKey=cfg.vapid_public_key||null;
-      $$("#chOpts .opt[data-v]").forEach(b=>{if(!serverChannels.includes(b.dataset.v)){b.disabled=true;b.style.opacity=".45";b.querySelector("span:last-child").innerHTML+='<small>Coming soon</small>'}});
+      CFG=cfg;try{ME=await api("/me")}catch{}
+      const freeCh=cfg.free_channels||[];
+      $$("#chOpts .opt[data-v]").forEach(b=>{const v=b.dataset.v;
+        if(!serverChannels.includes(v)){b.disabled=true;b.style.opacity=".45";b.querySelector("span:last-child").innerHTML+='<small>Coming soon</small>'}
+        else if(ME.plan!=="premium"&&!freeCh.includes(v)){b.disabled=true;b.style.opacity=".6";b.insertAdjacentHTML("beforeend",'<span class="pro-tag">Premium</span>')}});
+      if(cfg.broadcast_channel)$("#tgBanner").innerHTML=`<div class="banner"><span>📣 Free deals, daily, on Telegram</span><a href="${cfg.broadcast_channel}" target="_blank" rel="noopener">Join ›</a></div>`;
       const d=(await api("/deals?limit=40")).deals||[];
       if(d.length){DEALS=d.map(x=>({from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals found`}
       if(!tg)alerts=((await api("/alerts")).alerts||[]).map(fromServer);
