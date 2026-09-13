@@ -179,7 +179,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 
   <main>
     <section class="screen" id="s-deals">
-      <h1>Fresh flight deals</h1>
+      <h1>Hot. Deals. Now.</h1>
       <p class="lede">Tap a fare to book it.</p>
       <div class="live"><i></i><span id="liveTxt">Scanning fares right now</span></div>
       <div id="tgBanner"></div>
@@ -568,13 +568,13 @@ function renderPlan(){
   el.innerHTML=`<div class="plan"><b>Free plan</b><p>${fl.max_alerts||1} route · deals ${fl.delay_hours||12}h after Premium members · ${(fl.channels||[]).map(c=>CH[c]).join(" & ")} only</p>${ME.premium_available&&ME.checkout_url?`<a href="${ME.checkout_url}" target="_blank" rel="noopener">Go Premium — ${ME.price_label||""}</a>`:`<span style="opacity:.8;font-size:.9rem">Premium is opening soon.</span>`}</div>`;
 }
 function renderAlerts(){renderPlan();
-  $("#mineSub").textContent=alerts.length?`${alerts.length} route${alerts.length>1?"s":""} being watched.`:"Nothing yet.";
+  $("#mineSub").textContent=alerts.length?`${alerts.length} route${alerts.length>1?"s":""} being watched.`:"Create your first alert.";
   $("#alerts").innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.paused?"paused":""}" data-id="${a.id}">
     <div class="cities">${CITY[a.from]||a.from} → ${destLabel(a.to)}</div>
     <div class="meta">Under <em>${fmtP(a.price,a.cur)}</em> · ${CABIN[a.cabin]} · ${a.airline||"any airline"} · ${whenText(a)}${a.lastLow?` · lowest seen <em>${fmtP(a.lastLow,"CAD")}</em>`:""}${a.paused?" · <em>paused</em>":""}</div>
     <div class="via">${a.channels.map(c=>`<span>${CH[c]||c}</span>`).join("")}</div>
     <div class="acts"><button data-act="pause">${a.paused?"Resume":"Pause"}</button><button data-act="del">Delete</button></div></div>`).join("")
-  :`<div class="empty">You haven't set any alerts yet.<br><button class="btn btn-primary" onclick="showTab('new')">Set my first alert</button></div>`;
+  :`<div class="empty">Tell me where you'd like to fly and I'll watch the fares for you.<br><button class="btn btn-primary" onclick="showTab('new')">Create your first alert</button></div>`;
 }
 $("#alerts").addEventListener("click",async e=>{const b=e.target.closest("[data-act]");if(!b)return;const id=b.closest(".alert").dataset.id,a=alerts.find(x=>x.id===id);
   try{
