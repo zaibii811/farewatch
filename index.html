@@ -577,7 +577,7 @@ function renderDeals(){
     ${d.from||d.to?`<div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Multiple cities"}<span class="arrow">→</span>${d.to?flag(d.to)+(CITY[d.to]||d.to):"Multiple cities"}</div>`:`<div class="cities">${d.title.replace(/\s+/g," ").slice(0,70)}</div>`}
     <div class="chips">${d.airlineName?`<span>✈️ ${d.airlineName}</span>`:""}<span>💺 ${CABIN[d.cabin]||"Economy"}</span></div>
     <div class="desc">${d.from||d.to?describe(d):"Open the fare for the full route and dates."}</div>
-    <div class="foot"><span>Spotted ${ago(d.age)}</span><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
+    <div class="foot"><span>${d.verified&&d.live?`<b style="color:var(--go)">Live ✓ ${fmtP(d.live,d.liveCur||"USD")}</b> · `:""}Spotted ${ago(d.age)}</span><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
   :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
 }
 
@@ -622,7 +622,7 @@ async function boot(){
         else if(ME.plan!=="premium"&&!freeCh.includes(v)){b.disabled=true;b.style.opacity=".6";b.insertAdjacentHTML("beforeend",'<span class="pro-tag">Premium</span>')}});
       if(cfg.broadcast_channel)$("#tgBanner").innerHTML=`<div class="banner"><span>📣 Free deals, daily, on Telegram</span><a href="${cfg.broadcast_channel}" target="_blank" rel="noopener">Join ›</a></div>`;
       const d=(await api("/deals?limit=40")).deals||[];
-      if(d.length){DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals found`}
+      if(d.length){DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,live:x.live_price,liveCur:x.live_currency,verified:x.verified_at,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals found`}
       if(!tg)alerts=((await api("/alerts")).alerts||[]).map(fromServer);
     }catch(e){console.warn("API unavailable, sample mode:",e.message)}
   }
@@ -633,7 +633,7 @@ async function boot(){
 }
 async function refreshDeals(){
   try{const d=(await api("/deals?limit=40")).deals||[];if(!d.length)return;
-    DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));
+    DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,live:x.live_price,liveCur:x.live_currency,verified:x.verified_at,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));
     $("#liveTxt").textContent=`Live · ${d.length} deals · refreshed ${new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}`;if($("#s-deals").classList.contains("on"))renderDeals();}catch{}
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&API)refreshDeals()});
