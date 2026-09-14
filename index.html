@@ -17,8 +17,11 @@
   --signal:#FF5A36; --signal-ink:#C93D1F; --go:#00B37E; --go-soft:#DDF7EE; --amber:#FFC42E; --blue:#2F6BFF; --violet:#7C5CFF; --fs:1;
   --hero:linear-gradient(135deg,#2F6BFF 0%,#6A5CFF 55%,#B14DFF 100%);
 }
-:root[data-theme="dark"]{ --paper:#05081A; --sky:#26306A; --line:#3B4790; --card:#161E4E; --text:#F4F6FF; --muted:#B9C3EA; --go-soft:#0F3A2E; --ink:#F4F6FF; --blue:#5B8CFF; }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#05081A; --sky:#26306A; --line:#3B4790; --card:#161E4E; --text:#F4F6FF; --muted:#B9C3EA; --go-soft:#0F3A2E; --ink:#F4F6FF; --blue:#5B8CFF; } }
+:root[data-theme="dark"]{ --paper:#0A0724; --sky:#33246E; --line:#5A48B8; --card:#1A1450; --text:#F6F3FF; --muted:#C4B9F2; --go-soft:#0F3A2E; --ink:#F6F3FF; --blue:#8B7CFF; --violet:#C08CFF; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#0A0724; --sky:#33246E; --line:#5A48B8; --card:#1A1450; --text:#F6F3FF; --muted:#C4B9F2; --go-soft:#0F3A2E; --ink:#F6F3FF; --blue:#8B7CFF; --violet:#C08CFF; } }
+:root[data-theme="dark"] nav.tabs{background:#120E3A;border-top-color:#5A48B8}
+:root[data-theme="dark"] .deal:nth-child(even){background:#241B63}
+:root[data-theme="dark"] body{background-image:radial-gradient(60% 40% at 50% -10%,rgba(192,140,255,.22),transparent 70%)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{font-size:calc(17px * var(--fs))}
 body{margin:0;background:var(--paper);background-image:radial-gradient(60% 40% at 50% -10%,rgba(47,107,255,.14),transparent 70%);background-repeat:no-repeat;color:var(--text);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100dvh}
@@ -29,8 +32,9 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;position:relative}
 .top{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 0;gap:8px}
 body{overflow-x:hidden}
-.brand{font-weight:800;font-size:1.05rem;letter-spacing:-.02em;display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:0}
-.brand .b247{background:var(--hero);color:#fff;border-radius:8px;padding:1px 6px;font-size:.72rem;margin-left:2px}
+.brand{font-weight:800;font-size:clamp(1rem,5.4vw,1.3rem);letter-spacing:-.03em;display:flex;align-items:baseline;gap:0;white-space:nowrap;min-width:0;background:var(--hero);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand .cap{font-size:1.35em;line-height:1}
+.brand .b247{background:var(--hero);color:#fff;-webkit-text-fill-color:#fff;border-radius:8px;padding:2px 6px;font-size:.62rem;margin-left:5px;align-self:center;flex:none}
 .brand i{width:28px;height:28px;border-radius:9px;background:var(--hero);display:grid;place-items:center;color:#fff;font-style:normal;font-size:.9rem}
 .top .tools{display:flex;gap:6px}
 .top .tools{flex:none}
@@ -159,6 +163,8 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .deal .cities{font-weight:800;font-size:1.2rem;margin:12px 0 2px;letter-spacing:-.01em;display:flex;align-items:center;flex-wrap:wrap}
 .deal .tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;max-width:52%;flex:0 1 auto}
 .tag.cabin{background:var(--ink);color:#fff}
+.tag.expired{background:#8A93B2;color:#fff}
+.deal.gone{opacity:.55;filter:grayscale(.6)}.deal.gone .price{text-decoration:line-through;color:var(--muted)}.deal.gone .hurry{display:none}
 :root[data-theme="dark"] .tag.cabin{background:#fff;color:#14204A}
 .deal .price .stars{display:block;color:var(--go);font-size:.85rem;font-weight:800;letter-spacing:0;margin-top:6px;text-decoration:none}
 .deal .airline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:700;font-size:.92rem;margin-bottom:4px}
@@ -200,7 +206,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><i>✈</i>LordOftheWings<span class="b247">24/7</span></div>
+    <div class="brand"><span class="cap">L</span>ord<span class="cap">O</span>fthe<span class="cap">W</span>ings<span class="b247">24/7</span></div>
     <div class="tools"><select id="prefCur" aria-label="Currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option><option>PKR</option><option>INR</option><option>AED</option><option>MYR</option></select><button id="themeBtn" aria-label="Light or dark">◐</button></div>
   </header>
 
@@ -213,9 +219,10 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
       <div id="tgBanner"></div>
       <div class="filters" id="filters">
         <button aria-pressed="true" data-f="all">All</button>
-        <button aria-pressed="false" data-f="mine">Near me</button>
-        <button aria-pressed="false" data-f="error">Error fares</button>
-        <button aria-pressed="false" data-f="business">Business &amp; first</button>
+        <button aria-pressed="false" data-f="economy">Economy</button>
+        <button aria-pressed="false" data-f="premium">Premium</button>
+        <button aria-pressed="false" data-f="business">Business</button>
+        <button aria-pressed="false" data-f="first">First</button>
       </div>
       <div class="deals" id="deals"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
     </section>
@@ -337,7 +344,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
       <h1>My alerts</h1>
       <p class="lede" id="mineSub">Everything I'm watching for you.</p>
       <div id="planCard"></div>
-      <div class="settings"><span>Bigger text</span><button id="fsBtn" aria-pressed="false" class="toggle" aria-label="Bigger text"><i></i></button></div>
+
       <div id="alerts"></div>
     </section>
   </main>
@@ -395,9 +402,9 @@ const STEPS=8;
 
 const root=document.documentElement;let big=false;
 try{big=localStorage.getItem("fw-big")==="1";if(localStorage.getItem("fw-theme"))root.dataset.theme=localStorage.getItem("fw-theme")}catch{}
-const applyFs=()=>{root.style.setProperty("--fs",big?"1.2":"1");$("#fsBtn").setAttribute("aria-pressed",big)};applyFs();
+const applyFs=()=>{root.style.setProperty("--fs","1")};applyFs();
 $("#prefCur").value=PREF;$("#prefCur").onchange=()=>{PREF=$("#prefCur").value;try{localStorage.setItem("fw-cur",PREF)}catch{};$("#cur").value=PREF;renderDeals();renderAlerts()};
-$("#fsBtn").onclick=()=>{big=!big;applyFs();try{localStorage.setItem("fw-big",big?"1":"0")}catch{}};
+
 $("#themeBtn").onclick=()=>{const dark=root.dataset.theme==="dark"||(!root.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("fw-theme",root.dataset.theme)}catch{}};
 
 function showTab(t){$$(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+t));$$("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));window.scrollTo({top:0});if(t==="deals")renderDeals();if(t==="mine")renderAlerts()}
@@ -590,15 +597,15 @@ let booted=false;
 function renderDeals(){
   if(!booted)return;
   const my=alerts[0]?alerts[0].from:(S.from?S.from[0]:null);
-  const list=DEALS.filter(d=>filter==="all"||(filter==="error"&&(d.type==="error"||d.type==="mistake"))||(filter==="business"&&(d.cabin==="business"||d.cabin==="first"))||(filter==="mine"&&my&&d.from&&(d.from===my||(km(my,d.from)||1e9)<=300)));
-  $("#deals").innerHTML=list.length?list.map((d,i)=>`<div class="deal ${d.type}">
-    <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}${(r=>r?`<small class="stars">${r[0]} ${r[1]}</small>`:"")(rating(d))}</div><div class="tags">${d.type&&d.type!=="deal"?`<span class="tag ${d.type}">${TYPE[d.type]}</span>`:""}<span class="tag cabin">💺 ${CABIN[d.cabin]||"Economy"}</span></div></div>
+  const list=DEALS.filter(d=>filter==="all"||(d.cabin||"economy")===filter);
+  $("#deals").innerHTML=list.length?list.map((d,i)=>`<div class="deal ${d.type} ${d.gone?"gone":""}">
+    <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}${d.gone?"":(r=>r?`<small class="stars">${r[0]} ${r[1]}</small>`:"")(rating(d))}</div><div class="tags">${d.gone?`<span class="tag expired">Expired</span>`:d.type&&d.type!=="deal"?`<span class="tag ${d.type}">${TYPE[d.type]}</span>`:""}<span class="tag cabin">💺 ${CABIN[d.cabin]||"Economy"}</span></div></div>
     ${d.from||d.to?`<div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Multiple cities"}<span class="arrow">→</span>${d.to?flag(d.to)+(CITY[d.to]||d.to):"Multiple cities"}</div>`:`<div class="cities">${d.title.replace(/\s+/g," ").slice(0,70)}</div>`}
     ${d.airlineName?`<div class="chips"><span>✈️ ${d.airlineName}</span></div>`:""}
     <div class="desc">${d.from||d.to?describe(d):"Open the fare for the full route and dates."}</div>
     ${(d.type==="error"||d.type==="mistake")?`<div class="hurry">⏳ ${d.age<2880?`Error fares usually vanish within 1–2 days · about ${Math.max(1,Math.round((2880-d.age)/60))}h left`:"Error fares rarely last this long — check before you count on it"}</div>`:""}
-    <div class="foot"><span>${d.verified&&d.live?`<b style="color:var(--go)">Live ✓ ${fmtP(d.live,d.liveCur||"USD")}</b> · `:""}Spotted ${ago(d.age)}</span><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
-  :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
+    <div class="foot"><span>${d.gone?"This fare is no longer available":(d.verified&&d.live?`<b style="color:var(--go)">Live ✓</b> · `:"")+"Spotted "+ago(d.age)}</span><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
+  :`<div class="empty">No ${filter==="all"?"":CABIN[filter].toLowerCase()+" "}deals right now — set an alert and I'll tell you first.<br><button class="btn btn-primary" onclick="showTab('new')">Set an alert</button></div>`;
 }
 
 const destLabel=t=>!t?"Anywhere":t.startsWith("R:")?(REGIONS.find(r=>r[0]===t.slice(2))||[,t])[1]:t.startsWith("C:")?COUNTRY(t.slice(2)):(CITY[t]||t);
@@ -643,7 +650,7 @@ async function boot(){
       api("/public-stats").then(st=>{if(st.fares_checked_7d||st.deals_found_7d)$("#pubStats").textContent=`${st.fares_checked_7d.toLocaleString()} fares checked and ${st.deals_found_7d.toLocaleString()} deals found this week`}).catch(()=>{});
       if(cfg.broadcast_channel)$("#tgBanner").innerHTML=`<div class="banner"><span>📣 Free deals, daily, on Telegram</span><a href="${cfg.broadcast_channel}" target="_blank" rel="noopener">Join ›</a></div>`;
       const d=(await api("/deals?limit=40")).deals||[];
-      if(d.length){DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,live:x.live_price,liveCur:x.live_currency,verified:x.verified_at,typical:x.typical_price_cad,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals found`}
+      if(d.length){DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,live:x.live_price,liveCur:x.live_currency,verified:x.verified_at,typical:x.typical_price_cad,gone:x.gone,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));$("#liveTxt").textContent=`Live · ${d.length} deals found`}
       if(!tg)alerts=((await api("/alerts")).alerts||[]).map(fromServer);
     }catch(e){console.warn("API unavailable, sample mode:",e.message)}
   }
@@ -655,7 +662,7 @@ async function boot(){
 }
 async function refreshDeals(){
   try{const d=(await api("/deals?limit=40")).deals||[];if(!d.length)return;
-    DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,live:x.live_price,liveCur:x.live_currency,verified:x.verified_at,typical:x.typical_price_cad,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));
+    DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,live:x.live_price,liveCur:x.live_currency,verified:x.verified_at,typical:x.typical_price_cad,gone:x.gone,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));
     $("#liveTxt").textContent=`Live · ${d.length} deals · refreshed ${new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}`;if($("#s-deals").classList.contains("on"))renderDeals();}catch{}
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&API)refreshDeals()});
