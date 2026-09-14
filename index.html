@@ -629,7 +629,14 @@ async function boot(){
   if(!API||!serverChannels){try{alerts=JSON.parse(localStorage.getItem("fw-alerts")||"[]")}catch{alerts=[]}}
   booted=true;$("#cur").value=PREF;renderDeals();renderAlerts();go(0);
   loadRates().then(()=>{renderDeals();renderAlerts()});
+  if(API)setInterval(refreshDeals,5*60*1000);
 }
+async function refreshDeals(){
+  try{const d=(await api("/deals?limit=40")).deals||[];if(!d.length)return;
+    DEALS=d.map(x=>({id:x.id,from:x.origin,to:x.destination,cabin:{premium_economy:"premium"}[x.cabin]||x.cabin||"economy",price:x.price?+x.price:null,was:null,cur:x.currency||"USD",type:x.deal_type||"deal",title:x.title,book_url:x.book_url,airline:x.airline,airlineName:x.airline_name,alliance:x.alliance,fareClass:x.fare_class,trip:x.trip,nonstop:x.nonstop,age:Math.max(1,Math.round((Date.now()-new Date(x.published||x.found_at))/60000))}));
+    $("#liveTxt").textContent=`Live · ${d.length} deals · refreshed ${new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}`;if($("#s-deals").classList.contains("on"))renderDeals();}catch{}
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&API)refreshDeals()});
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),3800)}
 boot();
 </script>
