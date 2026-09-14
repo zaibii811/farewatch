@@ -131,6 +131,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 @keyframes ping{70%{box-shadow:0 0 0 9px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
 .deals{display:grid;gap:12px}
 .deal{display:block;text-decoration:none;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;animation:rise .5s both;transition:transform .18s ease,box-shadow .18s ease}
+.deal:nth-child(even){background:var(--sky)}
 .deal:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(47,107,255,.5)}
 .alert{animation:rise .45s both}
 .deal .cities .arrow{margin:0 12px;color:var(--muted)}
@@ -140,7 +141,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .deal .desc{color:var(--muted);font-size:.92rem;margin-top:4px}
 .deal .hurry{margin-top:8px;background:#FFF1E8;color:#B3451D;border-radius:10px;padding:7px 10px;font-size:.82rem;font-weight:700}
 :root[data-theme="dark"] .deal .hurry{background:#3A1F14;color:#FFB08A}
-.stats{color:var(--muted);font-size:.85rem;font-weight:600;margin:-8px 0 12px}
+.stats{display:none}
 .deal .foot{align-items:center}
 .deal .foot .book{background:var(--blue);color:#fff;text-decoration:none;border-radius:12px;padding:10px 14px;font-weight:800}
 .deal .milesBtn{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:9px 12px;font-weight:700;font-size:.85rem;color:var(--text)}
@@ -152,12 +153,14 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .deal .price{flex:1 1 auto;min-width:0;white-space:nowrap;font-size:1.85rem}
 .deal .price{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--blue)}
 .deal{border-left:6px solid var(--blue);min-width:0}.deal.error,.deal.mistake{border-left-color:var(--signal)}.deal.flash{border-left-color:var(--amber)}
-.deal .price small{display:block;font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:0;margin-top:3px}
+.deal .price small{display:block;font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:0;margin-top:3px;text-decoration:none}
 .tag{font-weight:800;font-size:.72rem;padding:5px 9px;border-radius:8px;white-space:nowrap}
 .tag.error,.tag.mistake{background:var(--signal);color:#fff}.tag.flash{background:var(--amber);color:#3A2A00}.tag.deal{background:var(--violet);color:#fff}
 .deal .cities{font-weight:800;font-size:1.2rem;margin:12px 0 2px;letter-spacing:-.01em;display:flex;align-items:center;flex-wrap:wrap}
 .deal .tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;max-width:52%;flex:0 1 auto}
-.tag.fire{background:var(--go);color:#fff}
+.tag.cabin{background:var(--ink);color:#fff}
+:root[data-theme="dark"] .tag.cabin{background:#fff;color:#14204A}
+.deal .price .stars{display:block;color:var(--go);font-size:.85rem;font-weight:800;letter-spacing:0;margin-top:6px;text-decoration:none}
 .deal .airline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:700;font-size:.92rem;margin-bottom:4px}
 .deal .airline .al{background:var(--ink);color:#fff;border-radius:6px;padding:2px 6px;font-size:.75rem;letter-spacing:.04em}
 :root[data-theme="dark"] .deal .airline .al{background:var(--amber);color:#3A2A00}
@@ -191,6 +194,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .toast{position:fixed;left:50%;bottom:104px;transform:translate(-50%,140px);background:#14204A;color:#fff;padding:13px 20px;border-radius:14px;font-weight:700;max-width:88vw;z-index:50;transition:transform .25s;text-align:center}
 .toast.show{transform:translate(-50%,0)}
 .in-telegram nav.tabs .bar{grid-template-columns:1fr 1fr}
+.in-telegram nav.tabs button.main{grid-column:auto}
 </style>
 </head>
 <body>
@@ -201,7 +205,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
   </header>
 
   <main>
-    <section class="screen" id="s-deals">
+    <section class="screen on" id="s-deals">
       <h1>Hot. Deals. Now.</h1>
       <p class="lede">Tap a fare to book it.</p>
       <div class="stats" id="pubStats"></div>
@@ -216,7 +220,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
       <div class="deals" id="deals"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
     </section>
 
-    <section class="screen on" id="s-new">
+    <section class="screen" id="s-new">
       <div class="route" id="route">
         <svg viewBox="0 0 500 150" aria-hidden="true">
           <path class="arc" d="M 40 110 Q 250 -10 460 110"/>
@@ -339,8 +343,8 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
   </main>
 
   <nav class="tabs" aria-label="Sections"><div class="bar">
-    <button data-tab="deals" aria-selected="false"><span class="em">🔥</span>Deals</button>
-    <button data-tab="new" class="main" aria-selected="true"><span class="em">✈️</span>Track a fare</button>
+    <button data-tab="new" aria-selected="false"><span class="em">✈️</span>Track a fare</button>
+    <button data-tab="deals" class="main" aria-selected="true"><span class="em">🔥</span>Deals</button>
     <button data-tab="mine" aria-selected="false"><span class="em">🔔</span>My alerts</button>
   </div></nav>
 </div>
@@ -573,7 +577,7 @@ function describe(d){
 function km(a,b){const A=META[a],B=META[b];if(!A||!B||A[2]==null||B[2]==null)return null;const r=Math.PI/180,dLat=(B[2]-A[2])*r,dLon=(B[3]-A[3])*r,la1=A[2]*r,la2=B[2]*r;const h=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return Math.round(6371*2*Math.asin(Math.sqrt(h)))}
 const CABIN_X={economy:1,premium:1.8,business:3.2,first:4.5};
 function rating(d){const dist=km(d.from,d.to);if(!d.price)return null;let base=d.typical;if(!base){if(!dist)return null;base=(150+0.13*dist)*(CABIN_X[d.cabin]||1)}const sc=base/toCAD(d.price,d.cur)+(d.type==="error"||d.type==="mistake"?.3:0);
-  return sc>=2?["🔥🔥🔥","Unmissable"]:sc>=1.5?["🔥🔥","Great deal"]:sc>=1.15?["🔥","Good price"]:["⭐","Fair"]}
+  return sc>=2?["⭐⭐⭐","Unmissable"]:sc>=1.5?["⭐⭐","Great deal"]:sc>=1.15?["⭐","Good price"]:null}
 function milesLine(d){const dist=km(d.from,d.to);if(!dist)return"";const mi=Math.round(dist*0.621);const [lo,hi]={economy:[.5,1],premium:[1,1.25],business:[1.25,2],first:[1.5,3]}[d.cabin]||[.5,1];
   return `<b>${dist.toLocaleString()} km</b> each way${d.fareClass?` · fare class <b>${d.fareClass}</b>`:""}<br>≈ <b>${(mi*2*lo).toLocaleString()}–${(mi*2*hi).toLocaleString()} miles</b> round trip on distance-based programs. Estimate only — your program's earning chart decides.`}
 const GCABIN={business:" business class",first:" first class",premium:" premium economy"};
@@ -588,9 +592,9 @@ function renderDeals(){
   const my=alerts[0]?alerts[0].from:(S.from?S.from[0]:null);
   const list=DEALS.filter(d=>filter==="all"||(filter==="error"&&(d.type==="error"||d.type==="mistake"))||(filter==="business"&&(d.cabin==="business"||d.cabin==="first"))||(filter==="mine"&&my&&d.from&&(d.from===my||(km(my,d.from)||1e9)<=300)));
   $("#deals").innerHTML=list.length?list.map((d,i)=>`<div class="deal ${d.type}">
-    <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}</div><div class="tags"><span class="tag ${d.type}">${TYPE[d.type]||"Deal"}</span>${(r=>r?`<span class="tag fire">${r[0]} ${r[1]}</span>`:"")(rating(d))}</div></div>
+    <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}${(r=>r?`<small class="stars">${r[0]} ${r[1]}</small>`:"")(rating(d))}</div><div class="tags">${d.type&&d.type!=="deal"?`<span class="tag ${d.type}">${TYPE[d.type]}</span>`:""}<span class="tag cabin">💺 ${CABIN[d.cabin]||"Economy"}</span></div></div>
     ${d.from||d.to?`<div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Multiple cities"}<span class="arrow">→</span>${d.to?flag(d.to)+(CITY[d.to]||d.to):"Multiple cities"}</div>`:`<div class="cities">${d.title.replace(/\s+/g," ").slice(0,70)}</div>`}
-    <div class="chips">${d.airlineName?`<span>✈️ ${d.airlineName}</span>`:""}<span>💺 ${CABIN[d.cabin]||"Economy"}</span></div>
+    ${d.airlineName?`<div class="chips"><span>✈️ ${d.airlineName}</span></div>`:""}
     <div class="desc">${d.from||d.to?describe(d):"Open the fare for the full route and dates."}</div>
     ${(d.type==="error"||d.type==="mistake")?`<div class="hurry">⏳ ${d.age<2880?`Error fares usually vanish within 1–2 days · about ${Math.max(1,Math.round((2880-d.age)/60))}h left`:"Error fares rarely last this long — check before you count on it"}</div>`:""}
     <div class="foot"><span>${d.verified&&d.live?`<b style="color:var(--go)">Live ✓ ${fmtP(d.live,d.liveCur||"USD")}</b> · `:""}Spotted ${ago(d.age)}</span><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
