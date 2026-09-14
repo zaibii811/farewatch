@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>FareWatch</title>
+<title>LordOftheWings24/7</title>
 <!-- Point this at your Render API to go live; leave empty for sample mode -->
 <meta name="farewatch-api" content="https://farewatch-he0q.onrender.com">
 <meta name="theme-color" content="#2F6BFF">
@@ -17,8 +17,8 @@
   --signal:#FF5A36; --signal-ink:#C93D1F; --go:#00B37E; --go-soft:#DDF7EE; --amber:#FFC42E; --blue:#2F6BFF; --violet:#7C5CFF; --fs:1;
   --hero:linear-gradient(135deg,#2F6BFF 0%,#6A5CFF 55%,#B14DFF 100%);
 }
-:root[data-theme="dark"]{ --paper:#0B1030; --sky:#182052; --line:#2C3770; --card:#141B45; --text:#EEF2FF; --muted:#A9B4DC; --go-soft:#0F3A2E; --ink:#EEF2FF; }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#0B1030; --sky:#182052; --line:#2C3770; --card:#141B45; --text:#EEF2FF; --muted:#A9B4DC; --go-soft:#0F3A2E; --ink:#EEF2FF; } }
+:root[data-theme="dark"]{ --paper:#05081A; --sky:#26306A; --line:#3B4790; --card:#161E4E; --text:#F4F6FF; --muted:#B9C3EA; --go-soft:#0F3A2E; --ink:#F4F6FF; --blue:#5B8CFF; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --paper:#05081A; --sky:#26306A; --line:#3B4790; --card:#161E4E; --text:#F4F6FF; --muted:#B9C3EA; --go-soft:#0F3A2E; --ink:#F4F6FF; --blue:#5B8CFF; } }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{font-size:calc(17px * var(--fs))}
 body{margin:0;background:var(--paper);background-image:radial-gradient(60% 40% at 50% -10%,rgba(47,107,255,.14),transparent 70%);background-repeat:no-repeat;color:var(--text);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100dvh}
@@ -27,15 +27,19 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 .app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;position:relative}
-.top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 0}
-.brand{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 0;gap:8px}
+body{overflow-x:hidden}
+.brand{font-weight:800;font-size:1.05rem;letter-spacing:-.02em;display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:0}
+.brand .b247{background:var(--hero);color:#fff;border-radius:8px;padding:1px 6px;font-size:.72rem;margin-left:2px}
 .brand i{width:28px;height:28px;border-radius:9px;background:var(--hero);display:grid;place-items:center;color:#fff;font-style:normal;font-size:.9rem}
 .top .tools{display:flex;gap:6px}
-.top .tools select{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:6px 8px;font-weight:700;font-size:.85rem;min-height:40px}
-.top .tools button{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:6px 10px;font-weight:700;font-size:.85rem;min-height:40px}
+.top .tools{flex:none}
+.top .tools select{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:4px 4px;font-weight:700;font-size:.8rem;min-height:36px}
+.top .tools button{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:4px 8px;font-weight:700;font-size:.8rem;min-height:36px}
 .top .tools button[aria-pressed="true"]{background:var(--sky);border-color:var(--ink)}
 main{flex:1;padding:8px 18px 110px}
-.screen{display:none}.screen.on{display:block}
+.screen{display:none}.screen.on{display:block;animation:screenIn .32s cubic-bezier(.2,.7,.2,1) both}
+@keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 h1{font-size:1.7rem;line-height:1.1;letter-spacing:-.025em;margin:14px 0 6px;font-weight:800;color:var(--text)}
 .lede{color:var(--muted);margin:0 0 18px;font-size:1rem}
 
@@ -54,7 +58,7 @@ nav.tabs button.main[aria-selected="true"]{box-shadow:0 0 0 3px var(--card),0 0 
 .route svg{position:relative}
 .route svg{width:100%;height:100%;overflow:visible}
 .route .arc{fill:none;stroke:rgba(255,255,255,.45);stroke-width:2.5;stroke-dasharray:6 8}
-.route .arc.live{stroke:#FFC42E;stroke-width:3.5;stroke-dasharray:1;transition:stroke-dashoffset .8s ease}
+.route .arc.live{stroke:#FFC42E;stroke-width:3.5;stroke-dasharray:1;transition:stroke-dashoffset 1s cubic-bezier(.2,.7,.2,1)}
 .route .dot{fill:#fff;stroke:#FFC42E;stroke-width:4}
 .route .lbl{font-weight:800;font-size:15px;fill:#fff}
 .plane-el{position:absolute;width:34px;height:34px;left:10px;top:10px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35));offset-path:path("M 40 110 Q 250 -10 460 110");offset-distance:6%;offset-rotate:auto;transition:offset-distance .9s cubic-bezier(.4,0,.2,1)}
@@ -65,8 +69,18 @@ nav.tabs button.main[aria-selected="true"]{box-shadow:0 0 0 3px var(--card),0 0 
 .progress{display:flex;gap:6px;margin:6px 0 14px}
 .progress i{flex:1;height:5px;border-radius:3px;background:var(--line)}
 .progress i.fill{background:var(--blue)}
-.step{display:none}.step.on{display:block;animation:in .28s ease-out}
-@keyframes in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+.step{display:none}.step.on{display:block;animation:in .3s cubic-bezier(.2,.7,.2,1)}
+.step.on.back{animation-name:inBack}
+@keyframes in{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes inBack{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+.progress i{transition:background .35s ease}
+.opt,.results button,.filters button,nav.tabs button,.chip{transition:transform .12s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease,opacity .2s ease}
+.opt:active,.results button:active,.filters button:active{transform:scale(.97)}
+.big{transition:border-color .2s ease,box-shadow .2s ease}
+.skeleton{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;height:170px;position:relative;overflow:hidden}
+.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shimmer 1.2s infinite}
+:root[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 .q{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;margin:0 0 4px;line-height:1.15}
 .hint{color:var(--muted);font-size:.95rem;margin:0 0 14px}
 .big{width:100%;border:2px solid var(--line);border-radius:16px;background:var(--card);min-height:62px;padding:0 18px;font-size:1.2rem;font-weight:600}
@@ -116,7 +130,9 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .live i{width:8px;height:8px;border-radius:50%;background:#2ECC71;box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:ping 1.8s infinite}
 @keyframes ping{70%{box-shadow:0 0 0 9px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
 .deals{display:grid;gap:12px}
-.deal{display:block;text-decoration:none;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;animation:rise .5s both}
+.deal{display:block;text-decoration:none;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;animation:rise .5s both;transition:transform .18s ease,box-shadow .18s ease}
+.deal:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(47,107,255,.5)}
+.alert{animation:rise .45s both}
 .deal .cities .arrow{margin:0 12px;color:var(--muted)}
 .deal .cities img{width:24px;height:18px;border-radius:3px;vertical-align:-2px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
 .deal .chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}
@@ -157,6 +173,10 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .banner{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--sky);border-radius:14px;padding:10px 14px;margin-bottom:12px;font-weight:700;font-size:.92rem}
 .banner a{color:var(--blue);text-decoration:none;white-space:nowrap}
 .opt .pro-tag{margin-left:auto;background:var(--amber);color:#3A2A00;border-radius:8px;padding:3px 8px;font-size:.72rem;font-weight:800}
+.settings{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 16px;margin-bottom:14px;font-weight:700}
+.toggle{width:54px;height:32px;border-radius:999px;border:0;background:var(--line);position:relative;padding:0}
+.toggle i{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s ease}
+.toggle[aria-pressed="true"]{background:var(--blue)}.toggle[aria-pressed="true"] i{transform:translateX(22px)}
 .alert{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
 .alert.paused{opacity:.55}
 .alert .cities{font-weight:800;font-size:1.15rem}
@@ -173,8 +193,8 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><i>✈</i>FareWatch</div>
-    <div class="tools"><select id="prefCur" aria-label="Currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option><option>PKR</option><option>INR</option><option>AED</option><option>MYR</option></select><button id="fsBtn" aria-pressed="false">Aa</button><button id="themeBtn" aria-label="Light or dark">◐</button></div>
+    <div class="brand"><i>✈</i>LordOftheWings<span class="b247">24/7</span></div>
+    <div class="tools"><select id="prefCur" aria-label="Currency"><option>CAD</option><option>USD</option><option>EUR</option><option>GBP</option><option>PKR</option><option>INR</option><option>AED</option><option>MYR</option></select><button id="themeBtn" aria-label="Light or dark">◐</button></div>
   </header>
 
   <main>
@@ -189,7 +209,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
         <button aria-pressed="false" data-f="error">Error fares</button>
         <button aria-pressed="false" data-f="business">Business &amp; first</button>
       </div>
-      <div class="deals" id="deals"></div>
+      <div class="deals" id="deals"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
     </section>
 
     <section class="screen on" id="s-new">
@@ -207,7 +227,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 
       <div class="step on" data-step="0">
         <p class="q">Where are you flying from?</p>
-        <p class="hint">Type a city or airport, like Lahore or LHE.</p>
+        <p class="hint">Enter a city or airport.</p>
         <input class="big" id="fromIn" placeholder="City or airport" autocomplete="off" inputmode="search">
         <div class="results" id="fromRes"></div>
       </div>
@@ -308,6 +328,7 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
       <h1>My alerts</h1>
       <p class="lede" id="mineSub">Everything I'm watching for you.</p>
       <div id="planCard"></div>
+      <div class="settings"><span>Bigger text</span><button id="fsBtn" aria-pressed="false" class="toggle" aria-label="Bigger text"><i></i></button></div>
       <div id="alerts"></div>
     </section>
   </main>
@@ -436,8 +457,9 @@ price.oninput=()=>{range.value=Math.min(5000,price.value)};range.oninput=()=>{pr
 
 function renderProgress(){$("#progress").innerHTML=Array.from({length:STEPS-1},(_,i)=>`<i class="${i<S.step?"fill":""}"></i>`).join("")}
 function go(n){
+  const back=n<S.step;
   S.step=Math.max(0,Math.min(STEPS-1,n));
-  $$(".step").forEach(s=>s.classList.toggle("on",+s.dataset.step===S.step));
+  $$(".step").forEach(s=>{s.classList.remove("on","back");if(+s.dataset.step===S.step){s.classList.add("on");if(back)s.classList.add("back")}});
   renderProgress();updateRoute();
   const last=S.step===STEPS-1;
   $("#wizFoot").style.display=last?"none":"flex";$("#progress").style.visibility=last?"hidden":"visible";
@@ -545,14 +567,16 @@ const META={};AIRPORTS.forEach(a=>META[a[0]]=[a[3],a[5],a[6],a[7]]);
 const RCOUNTRIES={ME:"AE,SA,QA,BH,KW,OM,JO,LB,IL,IQ,IR,TR,EG",SA:"PK,IN,BD,LK,NP,MV,BT,AF",SEA:"MY,SG,TH,VN,ID,PH,KH,LA,MM,BN",EA:"JP,KR,CN,HK,TW,MO,MN",CAR:"MX,CU,DO,JM,BS,BB,AW,CW,PR,TT,KY,TC,AG,LC,VC,GD,SX,MF,VI,VG,BM,BZ,CR,PA",US:"US",CA:"CA",LATAM:"GT,HN,SV,NI"},RCONT={EU:"EU",LATAM:"SA",AF:"AF",OC:"OC"};
 function destOk(spec,code){if(!spec)return true;if(!code)return false;const m=META[code]||[];if(spec.startsWith("C:"))return m[0]===spec.slice(2);if(spec.startsWith("R:")){const r=spec.slice(2);return (RCOUNTRIES[r]||"").split(",").includes(m[0])||RCONT[r]===m[1]}return code===spec}
 function matches(p){return DEALS.filter(d=>d.from===p.origin&&destOk(p.destination,d.to)&&(p.cabin_class==="economy"||d.cabin===p.cabin_class||(p.cabin_class==="premium_economy"&&d.cabin==="premium"))&&d.price&&toCAD(d.price,d.cur)<=toCAD(p.max_price,p.currency))}
+let booted=false;
 function renderDeals(){
+  if(!booted)return;
   const my=alerts[0]?alerts[0].from:(S.from?S.from[0]:null);
   const list=DEALS.filter(d=>filter==="all"||(filter==="error"&&(d.type==="error"||d.type==="mistake"))||(filter==="business"&&(d.cabin==="business"||d.cabin==="first"))||(filter==="mine"&&my&&d.from===my));
   $("#deals").innerHTML=list.length?list.map((d,i)=>`<div class="deal ${d.type}">
     <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}</div><div class="tags"><span class="tag ${d.type}">${TYPE[d.type]||"Deal"}</span>${(r=>r?`<span class="tag fire">${r[0]} ${r[1]}</span>`:"")(rating(d))}</div></div>
-    <div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Various cities"}<span class="arrow">→</span>${d.to?flag(d.to)+(CITY[d.to]||d.to):"Several cities"}</div>
+    ${d.from||d.to?`<div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Multiple cities"}<span class="arrow">→</span>${d.to?flag(d.to)+(CITY[d.to]||d.to):"Multiple cities"}</div>`:`<div class="cities">${d.title.replace(/\s+/g," ").slice(0,70)}</div>`}
     <div class="chips">${d.airlineName?`<span>✈️ ${d.airlineName}</span>`:""}<span>💺 ${CABIN[d.cabin]||"Economy"}</span></div>
-    <div class="desc">${d.from||d.to?describe(d):d.title}</div>
+    <div class="desc">${d.from||d.to?describe(d):"Open the fare for the full route and dates."}</div>
     <div class="foot"><span>Spotted ${ago(d.age)}</span><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
   :`<div class="empty">${filter==="mine"?"No deals from your city yet — set an alert and I'll tell you first.":"Nothing here right now. Check back soon."}${filter==="mine"?'<br><button class="btn btn-primary" onclick="showTab(\'new\')">Set an alert</button>':""}</div>`;
 }
@@ -562,7 +586,8 @@ function fromServer(r){const cab={economy:"economy",premium_economy:"premium",bu
   return{id:String(r.id),from:r.origin,to:r.destination||"",when:"pick",d1:r.departure_date,d2:r.return_date||"",cabin:cab,airline:r.preferred_airline&&r.preferred_airline!=="ALL"?(CODE_NAME[r.preferred_airline]||r.preferred_airline):"",price:r.target_price,cur:"CAD",channels:r.channels||[],paused:!!r.paused,lastLow:r.last_low}}
 function persistLocal(){if(!API||!serverChannels)try{localStorage.setItem("fw-alerts",JSON.stringify(alerts))}catch{}}
 function renderPlan(){
-  const el=$("#planCard");if(!API||!serverChannels){el.innerHTML="";return}
+  const el=$("#planCard");el.innerHTML="";return; // plan card hidden for now
+  if(!API||!serverChannels){el.innerHTML="";return}
   if(ME.plan==="premium"){el.innerHTML=`<div class="plan pro"><b>⭐ Premium</b><p>Unlimited routes, instant deals, every channel. Thank you!</p></div>`;return}
   const fl=ME.free_limits||{};
   el.innerHTML=`<div class="plan"><b>Free plan</b><p>${fl.max_alerts||1} route · deals ${fl.delay_hours||12}h after Premium members · ${(fl.channels||[]).map(c=>CH[c]).join(" & ")} only</p>${ME.premium_available&&ME.checkout_url?`<a href="${ME.checkout_url}" target="_blank" rel="noopener">Go Premium — ${ME.price_label||""}</a>`:`<span style="opacity:.8;font-size:.9rem">Premium is opening soon.</span>`}</div>`;
@@ -602,7 +627,7 @@ async function boot(){
     }catch(e){console.warn("API unavailable, sample mode:",e.message)}
   }
   if(!API||!serverChannels){try{alerts=JSON.parse(localStorage.getItem("fw-alerts")||"[]")}catch{alerts=[]}}
-  $("#cur").value=PREF;renderDeals();renderAlerts();go(0);
+  booted=true;$("#cur").value=PREF;renderDeals();renderAlerts();go(0);
   loadRates().then(()=>{renderDeals();renderAlerts()});
 }
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),3800)}

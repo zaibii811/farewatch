@@ -1,4 +1,4 @@
-# FareWatch
+# LordOftheWings24/7 (FareWatch)
 
 Cheap flights find you. A single-page app where anyone — from first-time bookers to WhatsApp-native travellers — can set a flight-deal alert in about a minute.
 
