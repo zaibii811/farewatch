@@ -129,8 +129,10 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .confetti i{position:absolute;top:-10px;width:9px;height:14px;border-radius:2px;animation:drop 1.6s ease-in forwards}
 @keyframes drop{to{transform:translateY(105vh) rotate(540deg);opacity:0}}
 
-.filterRow{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
-#cabinFilter{align-self:flex-end;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:0 12px;font-weight:700;font-size:.88rem;min-height:38px}
+.filterRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.filterRow label{display:flex;flex-direction:column;gap:4px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;min-width:0}
+.filterRow select{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:0 8px;font-weight:700;font-size:.9rem;min-height:44px;color:var(--text);text-transform:none;letter-spacing:0}
+.filterRow select:hover{border-color:var(--blue)}
 .filters{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}
 .filters button{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:9px 15px;font-weight:700;font-size:.92rem;min-height:42px}
 .filters.wrap{flex-wrap:wrap;overflow:visible}
@@ -141,7 +143,8 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .deals{display:grid;gap:12px}
 .deal{display:block;text-decoration:none;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;animation:rise .5s both;transition:transform .18s ease,box-shadow .18s ease}
 .deal:nth-child(even){background:var(--sky)}
-.deal:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(47,107,255,.5)}
+.deal[data-href]:not([data-href=""]){cursor:pointer}
+.deal:hover{transform:translateY(-3px);border-color:var(--blue);box-shadow:0 18px 36px -18px rgba(47,107,255,.6)}
 .alert{animation:rise .45s both}
 .deal .cities .arrow{margin:0 12px;color:var(--muted)}
 .deal .cities img{width:24px;height:18px;border-radius:3px;vertical-align:-2px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
@@ -151,8 +154,9 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
 .deal .hurry{margin-top:8px;background:#FFF1E8;color:#B3451D;border-radius:10px;padding:7px 10px;font-size:.82rem;font-weight:700}
 :root[data-theme="dark"] .deal .hurry{background:#3A1F14;color:#FFB08A}
 .stats{display:none}
-.deal .foot{align-items:center}
-.deal .foot .book{background:var(--blue);color:#fff;text-decoration:none;border-radius:12px;padding:10px 14px;font-weight:800}
+.deal .book{display:block;text-align:center;margin-top:12px;background:var(--blue);color:#fff;text-decoration:none;border-radius:14px;padding:13px;font-weight:800;font-size:1rem;transition:filter .15s,transform .12s}
+.deal .book:hover{filter:brightness(1.08)}.deal .book:active{transform:scale(.98)}
+.tag.live{background:var(--go);color:#fff}
 .deal .milesBtn{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:9px 12px;font-weight:700;font-size:.85rem;color:var(--text)}
 .deal .milesBtn[aria-expanded="true"]{background:var(--sky);border-color:var(--blue)}
 .deal .miles{display:none}.deal .miles.open{display:block}
@@ -223,18 +227,9 @@ input[type=range]{width:100%;accent-color:var(--signal);height:44px}
       <div class="live"><i></i><span id="liveTxt">Scanning fares right now</span></div>
       <div id="tgBanner"></div>
       <div class="filterRow">
-        <div class="filters" id="filters">
-          <button aria-pressed="true" data-f="">All</button>
-          <button aria-pressed="false" data-f="EU">Europe</button>
-          <button aria-pressed="false" data-f="ASIA">Asia</button>
-          <button aria-pressed="false" data-f="ME">Middle East</button>
-          <button aria-pressed="false" data-f="NA">North America</button>
-          <button aria-pressed="false" data-f="CAR">Caribbean &amp; Mexico</button>
-          <button aria-pressed="false" data-f="LATAM">South America</button>
-          <button aria-pressed="false" data-f="AF">Africa</button>
-          <button aria-pressed="false" data-f="OC">Australia &amp; Pacific</button>
-        </div>
-        <select id="cabinFilter" aria-label="Seat class"><option value="">All classes</option><option value="economy">Economy</option><option value="premium">Premium economy</option><option value="business">Business</option><option value="first">First</option></select>
+        <label>Region<select id="regionFilter"><option value="">All</option><option value="EU">Europe</option><option value="ASIA">Asia</option><option value="ME">Middle East</option><option value="NA">North America</option><option value="CAR">Caribbean &amp; Mexico</option><option value="LATAM">South America</option><option value="AF">Africa</option><option value="OC">Australia &amp; Pacific</option></select></label>
+        <label>Class<select id="cabinFilter"><option value="">All</option><option value="economy">Economy</option><option value="premium">Premium</option><option value="business">Business</option><option value="first">First</option></select></label>
+        <label>Sort<select id="sortFilter"><option value="new">Newest</option><option value="rating">Best rated</option><option value="low">Price ↑</option><option value="high">Price ↓</option></select></label>
       </div>
       <div class="deals" id="deals"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
     </section>
@@ -578,12 +573,13 @@ let DEALS=[
 {from:"JFK",to:"DUB",cabin:"economy",price:289,was:640,cur:"USD",type:"flash",title:"New York to Dublin nonstop",age:140},
 {from:"YYZ",to:"DEL",airline:"QR",airlineName:"Qatar Airways",alliance:"oneworld",fareClass:"J",cabin:"business",price:2880,was:7100,cur:"CAD",type:"mistake",title:"Toronto to Delhi business — likely mistake fare",age:18},
 ];
-let filter="",cabinFilter="";
+let filter="",cabinFilter="",sortBy="new";
 $("#cabinFilter").onchange=()=>{cabinFilter=$("#cabinFilter").value;renderDeals()};
+$("#regionFilter").onchange=()=>{filter=$("#regionFilter").value;renderDeals()};
+$("#sortFilter").onchange=()=>{sortBy=$("#sortFilter").value;renderDeals()};
 const REGION_OF={ASIA:["SA","SEA","EA"],NA:["US","CA"]};
 function inRegionFilter(code,f){if(!f)return true;if(!code)return false;const ids=REGION_OF[f]||[f];return ids.some(id=>destOk("R:"+id,code))}
-$("#deals").addEventListener("click",e=>{const b=e.target.closest("[data-miles]");if(!b)return;const box=$("#miles-"+b.dataset.miles);const on=b.getAttribute("aria-expanded")!=="true";b.setAttribute("aria-expanded",on);box.classList.toggle("open",on)});
-$("#filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;$$("#filters button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderDeals()});
+$("#deals").addEventListener("click",e=>{if(e.target.closest("a"))return;const c=e.target.closest(".deal");if(c&&c.dataset.href){window.open(c.dataset.href,"_blank","noopener");return}const b=e.target.closest("[data-miles]");if(!b)return;const box=$("#miles-"+b.dataset.miles);const on=b.getAttribute("aria-expanded")!=="true";b.setAttribute("aria-expanded",on);box.classList.toggle("open",on)});
 const TYPE={error:"Error fare",mistake:"Mistake fare",flash:"Flash sale",deal:"Deal"};
 const flag=code=>{const c=(META[code]||[])[0];return c?`<img src="https://flagcdn.com/24x18/${c.toLowerCase()}.png" alt="" loading="lazy" onerror="this.style.display='none'">`:""};
 const TRIP={round_trip:"round trip",one_way:"one way"};
@@ -612,14 +608,16 @@ let booted=false;
 function renderDeals(){
   if(!booted)return;
   const my=alerts[0]?alerts[0].from:(S.from?S.from[0]:null);
-  const list=DEALS.filter(d=>inRegionFilter(d.to,filter)&&(!cabinFilter||(d.cabin||"economy")===cabinFilter));
-  $("#deals").innerHTML=list.length?list.map((d,i)=>`<div class="deal ${d.type} ${d.gone?"gone":""}">
-    <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}${d.gone?"":(r=>r?`<small class="stars">${r[0]} ${r[1]}</small>`:"")(rating(d))}</div><div class="tags">${d.gone?`<span class="tag expired">Expired</span>`:d.type&&d.type!=="deal"?`<span class="tag ${d.type}">${TYPE[d.type]}</span>`:""}<span class="tag cabin">💺 ${CABIN[d.cabin]||"Economy"}</span></div></div>
+  const score=d=>{const r=rating(d);return r?r[0].length/2:0};
+  const list=DEALS.filter(d=>inRegionFilter(d.to,filter)&&(!cabinFilter||(d.cabin||"economy")===cabinFilter))
+    .sort((a,b)=>((a.gone?1:0)-(b.gone?1:0))||(sortBy==="low"?toCAD(a.price||1e9,a.cur)-toCAD(b.price||1e9,b.cur):sortBy==="high"?toCAD(b.price||0,b.cur)-toCAD(a.price||0,a.cur):sortBy==="rating"?(score(b)-score(a))||(a.age-b.age):a.age-b.age));
+  $("#deals").innerHTML=list.length?list.map((d,i)=>`<div class="deal ${d.type} ${d.gone?"gone":""}" data-href="${d.gone?"":(d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"")))}">
+    <div class="row1"><div class="price">${d.price?fmtP(d.price,d.cur):"See fare"}${d.was?`<small>usually ${fmtP(d.was,d.cur)}</small>`:""}${d.gone?"":(r=>r?`<small class="stars">${r[0]} ${r[1]}</small>`:"")(rating(d))}</div><div class="tags">${d.gone?`<span class="tag expired">Expired</span>`:d.type&&d.type!=="deal"?`<span class="tag ${d.type}">${TYPE[d.type]}</span>`:""}<span class="tag cabin">💺 ${CABIN[d.cabin]||"Economy"}</span>${!d.gone&&d.verified&&d.live?`<span class="tag live">✓ Verified live</span>`:""}</div></div>
     ${d.from||d.to?`<div class="cities">${d.from?flag(d.from)+(CITY[d.from]||d.from):"Multiple cities"}<span class="arrow">→</span>${d.to?flag(d.to)+(CITY[d.to]||d.to):"Multiple cities"}</div>`:`<div class="cities">${d.title.replace(/\s+/g," ").slice(0,70)}</div>`}
     ${d.airlineName?`<div class="chips"><span>✈️ ${d.airlineName}</span></div>`:""}
     <div class="desc">${d.from||d.to?describe(d):"Open the fare for the full route and dates."}</div>
     ${(d.type==="error"||d.type==="mistake")?`<div class="hurry">⏳ ${d.age<2880?`Error fares usually vanish within 1–2 days · about ${Math.max(1,Math.round((2880-d.age)/60))}h left`:"Error fares rarely last this long — check before you count on it"}</div>`:""}
-    <div class="foot"><span>${d.gone?"This fare is no longer available":(d.verified&&d.live?`<b style="color:var(--go)">Live ✓ Verified</b>`:"")}</span><a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book ›</a></div></div>`).join("")
+    ${d.gone?`<div class="desc" style="margin-top:8px">This fare is no longer available.</div>`:`<a class="book" href="${d.id&&API?API+"/go/"+d.id+"?s=app":(d.book_url||(d.from?gflights(d.from,d.to,d.cabin):"#"))}" target="_blank" rel="noopener">Book now ›</a>`}</div>`).join("")
   :`<div class="empty">No deals here right now — set an alert and I'll tell you first.<br><button class="btn btn-primary" onclick="showTab('new')">Set an alert</button></div>`;
 }
 
